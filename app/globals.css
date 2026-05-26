@@ -1,0 +1,288 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-bg: #070708;
+  --color-bg-card: rgba(15, 14, 12, 0.7);
+  --color-text: #f5f3ef;
+  --color-muted: #8e8b82;
+  --color-neon-purple: #c5a059; /* Warm Gold */
+  --color-neon-blue: #e2c074;   /* Pale Gold */
+  --color-neon-pink: #9a6f27;   /* Bronze Gold */
+  --color-neon-orange: #f59e0b; /* Amber Gold */
+  --color-neon-green: #eab308;  /* Bright Gold */
+  --color-gold: #c5a059;
+  --color-border: rgba(197, 160, 89, 0.08);
+}
+
+@layer base {
+  :root {
+    --bg: #070708;
+    --bg-card: rgba(15, 14, 12, 0.7);
+    --text: #f5f3ef;
+    --muted: #8e8b82;
+    --neon-purple: #c5a059;
+    --neon-blue: #e2c074;
+    --neon-pink: #9a6f27;
+    --neon-orange: #f59e0b;
+    --neon-green: #eab308;
+    --gold: #c5a059;
+    --border: rgba(197, 160, 89, 0.08);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    background-color: var(--bg);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-syne), sans-serif;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #070708;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(197, 160, 89, 0.15);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--gold);
+  }
+
+  /* ==================== CINEMATIC FILM GRAIN ==================== */
+  .film-grain {
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    right: -50%;
+    bottom: -50%;
+    width: 200%;
+    height: 200%;
+    background: transparent url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E") repeat;
+    opacity: 0.85;
+    pointer-events: none;
+    z-index: 9999;
+    animation: grain-dance 8s steps(10) infinite;
+  }
+
+  @keyframes grain-dance {
+    0%, 100% { transform:translate(0, 0); }
+    10% { transform:translate(-5%, -10%); }
+    20% { transform:translate(-15%, 5%); }
+    30% { transform:translate(7%, -25%); }
+    40% { transform:translate(-5%, 25%); }
+    50% { transform:translate(-15%, 10%); }
+    60% { transform:translate(15%, 0%); }
+    75% { transform:translate(-10%, 25%); }
+    90% { transform:translate(10%, -10%); }
+  }
+
+  /* ==================== AMBIENT GOLD GRADIENTS (THERMAL MESH) ==================== */
+  .glow-container {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .glow-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(140px);
+    opacity: 0.15;
+    mix-blend-mode: screen;
+    animation: drift 25s ease-in-out infinite alternate;
+  }
+
+  .blob1 {
+    width: 50vw;
+    height: 50vw;
+    background: radial-gradient(circle, var(--neon-purple) 0%, transparent 70%);
+    top: -10%;
+    left: -10%;
+    animation-duration: 30s;
+  }
+
+  .blob2 {
+    width: 60vw;
+    height: 60vw;
+    background: radial-gradient(circle, var(--neon-pink) 0%, transparent 70%);
+    bottom: -20%;
+    right: -10%;
+    animation-duration: 25s;
+    animation-delay: -5s;
+  }
+
+  .blob3 {
+    width: 45vw;
+    height: 45vw;
+    background: radial-gradient(circle, var(--neon-orange) 0%, transparent 70%);
+    top: 40%;
+    left: 50%;
+    animation-duration: 35s;
+    animation-delay: -10s;
+  }
+
+  @keyframes drift {
+    0% {
+      transform: translate(0, 0) scale(1) rotate(0deg);
+    }
+    33% {
+      transform: translate(10%, 15%) scale(1.1) rotate(120deg);
+    }
+    66% {
+      transform: translate(-10%, -5%) scale(0.9) rotate(240deg);
+    }
+    100% {
+      transform: translate(0, 0) scale(1) rotate(360deg);
+    }
+  }
+
+  /* ==================== GLASSMORPHISM & CARD EFFECTS ==================== */
+  .glass-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(197, 160, 89, 0.08);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+    transition: border 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .glass-card:hover {
+    border-color: rgba(197, 160, 89, 0.2);
+  }
+
+  .neon-glow-border {
+    position: relative;
+  }
+
+  .neon-glow-border::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.15;
+    transition: opacity 0.3s ease;
+  }
+
+  .neon-glow-border:hover::after {
+    opacity: 0.65;
+    box-shadow: 0 0 15px rgba(197, 160, 89, 0.3);
+  }
+
+  /* ==================== CUSTOM CURSOR UTILITIES ==================== */
+  .hide-default-cursor {
+    cursor: none !important;
+  }
+
+  .hide-default-cursor a,
+  .hide-default-cursor button,
+  .hide-default-cursor input,
+  .hide-default-cursor textarea,
+  .hide-default-cursor [role="button"] {
+    cursor: none !important;
+  }
+
+  /* ==================== CRT TV GLITCH & LOADER EFFECTS ==================== */
+  .vhs-scanlines {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(197, 160, 89, 0.05), rgba(0, 0, 0, 0.02), rgba(197, 160, 89, 0.05));
+    background-size: 100% 4px, 6px 100%;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .crt-screen {
+    animation: textShadow 1.6s infinite;
+  }
+
+  @keyframes textShadow {
+    0% {
+      text-shadow: 0.43px 0 1px rgba(197, 160, 89, 0.5), -0.43px 0 1px rgba(154, 111, 39, 0.3), 0 0 3px;
+    }
+    10% {
+      text-shadow: 2.15px 0 1px rgba(197, 160, 89, 0.5), -2.15px 0 1px rgba(154, 111, 39, 0.3), 0 0 3px;
+    }
+    15% {
+      text-shadow: 0.5px 0 2px rgba(197, 160, 89, 0.6), -0.8px 0 2px rgba(154, 111, 39, 0.5), 0 0 3px;
+    }
+    25% {
+      text-shadow: -2.3px 0 1px rgba(197, 160, 89, 0.5), 1.7px 0 1px rgba(154, 111, 39, 0.4), 0 0 3px;
+    }
+    30% {
+      text-shadow: 0.43px 0 1px rgba(197, 160, 89, 0.5), -0.43px 0 1px rgba(154, 111, 39, 0.3), 0 0 3px;
+    }
+    100% {
+      text-shadow: 0.43px 0 1px rgba(197, 160, 89, 0.5), -0.43px 0 1px rgba(154, 111, 39, 0.3), 0 0 3px;
+    }
+  }
+
+  .glitch-flash {
+    animation: flash 0.25s steps(2) infinite;
+  }
+
+  @keyframes flash {
+    0% { opacity: 0.95; }
+    50% { opacity: 1; }
+    100% { opacity: 0.9; }
+  }
+
+  /* ==================== GOLD LOGO INVERSION HACK ==================== */
+  .logo-gold-invert {
+    filter: invert(1) hue-rotate(180deg) brightness(1.4) contrast(1.2);
+    mix-blend-mode: screen;
+  }
+
+  /* ==================== TEXT EFFECTS ==================== */
+  .text-glow {
+    text-shadow: 0 0 8px rgba(197, 160, 89, 0.25);
+  }
+
+  .text-neon-pink {
+    text-shadow: 0 0 10px rgba(154, 111, 39, 0.4);
+  }
+
+  .text-neon-purple {
+    text-shadow: 0 0 10px rgba(197, 160, 89, 0.4);
+  }
+
+  .text-neon-blue {
+    text-shadow: 0 0 10px rgba(226, 192, 116, 0.4);
+  }
+
+  /* Reveal transition helper */
+  .reveal-elem {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .reveal-elem.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Snapping slide for intro screen */
+  .intro-active {
+    overflow: hidden !important;
+    height: 100vh !important;
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "services": [
+    {
+      "category": "Recording Services",
+      "items": [
+        { "name": "Recording Session", "price": "₹800 / Per Hour" },
+        { "name": "Offer Package", "description": "3 Hours Recording Slot", "price": "₹2100" }
+      ]
+    },
+    {
+      "category": "Mixing & Mastering Services",
+      "items": [
+        { "name": "Basic Mix & Master", "price": "₹2000" },
+        { "name": "Premium Mix & Master", "price": "₹3500" },
+        { "name": "Standard Mix & Master", "price": "₹7500" }
+      ]
+    },
+    {
+      "category": "Music Production",
+      "items": [
+        { "name": "Custom Beat Production", "price": "₹6500" }
+      ]
+    },
+    {
+      "category": "Artist Package",
+      "items": [
+        { "name": "Complete Music Package", "price": "₹10000", "includes": ["2 Hours Recording Session", "Custom Beat Production", "Premium Mix & Master"] }
+      ]
+    },
+    {
+      "category": "Video Production Services",
+      "items": [
+        { "name": "Video Shoot", "price": "₹8500" },
+        { "name": "Video Shoot + Editing", "price": "₹15500" },
+        { "name": "Video Shoot + Editing + Poster + Visuals", "price": "₹17500" }
+      ]
+    },
+    {
+      "category": "Music Distribution Services",
+      "items": [
+        { "name": "Distribution Plans", "price": "Starts From ₹2000" },
+        { "name": "Star Plan", "price": "₹2999" }
+      ],
+      "partners": ["Madverse", "Songdew"]
+    },
+    {
+      "category": "Profile Management Services",
+      "items": [
+        { "name": "Monthly Management", "price": "₹5500", "platformsManaged": ["Instagram Profile", "Streaming Profiles", "YouTube Channel"], "servicesIncluded": ["Uploading", "Posting", "Updates", "Account Management", "Ads Management"] }
+      ]
+    },
+    {
+      "category": "Creative Design Services",
+      "items": [
+        { "name": "Creative Poster Design", "price": "Starts From ₹2000" },
+        { "name": "Creative Poster Package (All Sizes)", "price": "₹3500" }
+      ]
+    }
+  ]
+}
