@@ -22,7 +22,8 @@ import {
   Compass
 } from "lucide-react";
 import { defaultConfig } from "../lib/defaultConfig";
-import { saveRemoteConfig, uploadImageFile } from "../lib/firebase";
+import { saveRemoteConfig } from "../lib/firebase";
+import { uploadToImgBB } from "../lib/imageUploader";
 
 export default function AdminPanel() {
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -134,9 +135,8 @@ export default function AdminPanel() {
     const uploadKey = `${fieldType}-${indexOrId || 'global'}`;
     setUploadingField(uploadKey);
 
-    const filePath = `uploads/${Date.now()}-${file.name}`;
     try {
-      const downloadURL = await uploadImageFile(file, filePath);
+      const downloadURL = await uploadToImgBB(file);
       
       if (fieldType === "logo") {
         setConfig({ ...config, logoUrl: downloadURL });
@@ -157,7 +157,7 @@ export default function AdminPanel() {
       alert("Image uploaded successfully! Remember to click 'Publish Settings' to make it live.");
     } catch (err) {
       console.error(err);
-      alert("Failed to upload image. Please verify Firebase Storage rules are set to test mode.");
+      alert("Failed to upload image. Please verify your internet connection or try a different file.");
     } finally {
       setUploadingField(null);
     }
