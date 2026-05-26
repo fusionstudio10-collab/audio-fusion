@@ -1,5 +1,6 @@
 import { Syne, Instrument_Serif, Playfair_Display } from "next/font/google";
 import "./globals.css";
+import { ToastContainer } from "../components/Toast";
 
 const syne = Syne({
   variable: "--font-syne",
@@ -32,6 +33,7 @@ export default function RootLayout({ children }) {
     >
       <body className="min-h-full flex flex-col bg-[var(--bg)] text-[var(--text)]">
         {children}
+        <ToastContainer />
       </body>
     </html>
   );

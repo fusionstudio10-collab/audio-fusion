@@ -27,44 +27,40 @@ export default function PortfolioShowcase({ tracks = [], onTrackPlayChange }) {
         setIsPlaying(false);
         if (onTrackPlayChange) onTrackPlayChange(false);
       } else {
-        audioRef.current.play().catch(e => console.log("Audio play blocked", e));
+        audioRef.current.play().catch((e) => console.log("Audio play blocked", e));
         setIsPlaying(true);
         if (onTrackPlayChange) onTrackPlayChange(true);
       }
     } else {
-      // Load new track
+      // Stop previous
+      audioRef.current.pause();
       audioRef.current.src = track.audioUrl;
       audioRef.current.load();
-      audioRef.current.play()
+      audioRef.current
+        .play()
         .then(() => {
           setActiveTrackId(track.id);
           setIsPlaying(true);
           if (onTrackPlayChange) onTrackPlayChange(true);
         })
-        .catch((e) => {
-          console.warn("Failed to play track:", e);
-        });
+        .catch((e) => console.warn("Failed to play track:", e));
     }
   };
 
-  // Listen to audio ending
+  // Attach ended listener whenever the active track changes — fixes stale closure
   useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
     const handleEnded = () => {
       setIsPlaying(false);
       setActiveTrackId(null);
       if (onTrackPlayChange) onTrackPlayChange(false);
     };
 
-    if (audioRef.current) {
-      audioRef.current.addEventListener("ended", handleEnded);
-    }
-
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.removeEventListener("ended", handleEnded);
-      }
-    };
-  }, [activeTrackId]);
+    audio.addEventListener("ended", handleEnded);
+    return () => audio.removeEventListener("ended", handleEnded);
+  }, [activeTrackId, onTrackPlayChange]);
 
   if (!tracks || tracks.length === 0) return null;
 

@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { defaultConfig } from "../lib/defaultConfig";
 import { saveRemoteConfig } from "../lib/firebase";
+import { toast } from "../../components/Toast";
 
 export default function AdminPanel() {
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -88,37 +89,33 @@ export default function AdminPanel() {
     if (!config) return;
     setIsSaving(true);
     try {
-      // 1. Save to Firebase Firestore database
       await saveRemoteConfig(config);
-      
-      // 2. Local fallback sync
       localStorage.setItem("audio_fusion_config", JSON.stringify(config));
       setIsSaving(false);
-      alert("Settings successfully saved to Firebase Firestore & published live!");
+      toast.success("Settings published live to Firebase!");
     } catch (e) {
       console.error("Failed to save remote config:", e);
       setIsSaving(false);
-      alert("Failed to save changes online. Saved to local cache instead.");
       localStorage.setItem("audio_fusion_config", JSON.stringify(config));
+      toast.warn("Saved locally — Firebase sync failed. Check connection.");
     }
   };
 
   const handleReset = async () => {
-    if (confirm("Reset everything to default values both locally and on Firebase?")) {
-      try {
-        setIsSaving(true);
-        await saveRemoteConfig(defaultConfig);
-        setConfig(defaultConfig);
-        localStorage.setItem("audio_fusion_config", JSON.stringify(defaultConfig));
-        setIsSaving(false);
-        alert("Config reset to defaults both locally and on Firebase Firestore!");
-      } catch (e) {
-        console.error("Failed to reset remote config:", e);
-        setConfig(defaultConfig);
-        localStorage.setItem("audio_fusion_config", JSON.stringify(defaultConfig));
-        setIsSaving(false);
-        alert("Reset locally. Failed to reset on Firebase.");
-      }
+    if (!window.confirm("Reset everything to default values?")) return;
+    try {
+      setIsSaving(true);
+      await saveRemoteConfig(defaultConfig);
+      setConfig(defaultConfig);
+      localStorage.setItem("audio_fusion_config", JSON.stringify(defaultConfig));
+      setIsSaving(false);
+      toast.info("Config reset to defaults and published.");
+    } catch (e) {
+      console.error("Failed to reset remote config:", e);
+      setConfig(defaultConfig);
+      localStorage.setItem("audio_fusion_config", JSON.stringify(defaultConfig));
+      setIsSaving(false);
+      toast.warn("Reset locally only — Firebase sync failed.");
     }
   };
 
@@ -169,10 +166,10 @@ export default function AdminPanel() {
         setConfig({ ...config, portfolio: updatedPortfolio });
       }
 
-      alert("✅ Image uploaded to Cloudinary! Click 'Publish Settings' to make it live.");
+      toast.success("Image uploaded! Click Publish Settings to go live.");
     } catch (err) {
       console.error("Cloudinary upload error:", err);
-      alert(`❌ Upload failed: ${err.message}`);
+      toast.error(`Upload failed: ${err.message}`);
     } finally {
       setUploadingField(null);
     }
@@ -551,7 +548,7 @@ export default function AdminPanel() {
                   </div>
                   <div>
                     <label className="block text-[8px] font-mono text-[var(--muted)] mb-1.5 uppercase">Admin Passcode</label>
-                    <input type="text" name="adminPassword" value={config.adminPassword} onChange={handleChange} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] focus:outline-none font-mono" />
+                    <input type="password" name="adminPassword" value={config.adminPassword} onChange={handleChange} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] focus:outline-none font-mono" />
                   </div>
                 </div>
 
