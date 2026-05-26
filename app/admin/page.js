@@ -22,7 +22,7 @@ import {
   Compass
 } from "lucide-react";
 import { defaultConfig } from "../lib/defaultConfig";
-import { saveRemoteConfig, uploadImageFile } from "../lib/firebase";
+import { saveRemoteConfig } from "../lib/firebase";
 
 export default function AdminPanel() {
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -130,34 +130,49 @@ export default function AdminPanel() {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Show indicator
-    const uploadKey = `${fieldType}-${indexOrId || 'global'}`;
+    if (!file.type.startsWith("image/")) {
+      alert("Please select a valid image file (JPG, PNG, WEBP, etc.)");
+      return;
+    }
+
+    const uploadKey = `${fieldType}-${indexOrId || "global"}`;
     setUploadingField(uploadKey);
 
-    const filePath = `uploads/${Date.now()}-${file.name}`;
     try {
-      const downloadURL = await uploadImageFile(file, filePath);
-      
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "audio-fusion");
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Upload failed");
+      }
+
+      const { url } = await res.json();
+
       if (fieldType === "logo") {
-        setConfig({ ...config, logoUrl: downloadURL });
+        setConfig({ ...config, logoUrl: url });
       } else if (fieldType === "founder") {
         const updatedFounders = config.founders.map((f) => {
-          if (f.id === indexOrId) {
-            return { ...f, photo: downloadURL };
-          }
+          if (f.id === indexOrId) return { ...f, photo: url };
           return f;
         });
         setConfig({ ...config, founders: updatedFounders });
       } else if (fieldType === "showcase") {
         const updatedPortfolio = [...config.portfolio];
-        updatedPortfolio[indexOrId] = { ...updatedPortfolio[indexOrId], coverUrl: downloadURL };
+        updatedPortfolio[indexOrId] = { ...updatedPortfolio[indexOrId], coverUrl: url };
         setConfig({ ...config, portfolio: updatedPortfolio });
       }
-      
-      alert("Image uploaded successfully! Remember to click 'Publish Settings' to make it live.");
+
+      alert("✅ Image uploaded to Cloudinary! Click 'Publish Settings' to make it live.");
     } catch (err) {
-      console.error(err);
-      alert("Failed to upload image. Please verify Firebase Storage rules are set to test mode.");
+      console.error("Cloudinary upload error:", err);
+      alert(`❌ Upload failed: ${err.message}`);
     } finally {
       setUploadingField(null);
     }
