@@ -1,5 +1,6 @@
 import { initializeApp, getApps } from "firebase/app";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyCXMn5urCuXvW1E4qabBNiS3hmTJL6-tVM",
@@ -20,6 +21,7 @@ if (!getApps().length) {
 }
 
 export const db = getFirestore(app);
+export const storage = getStorage(app);
 
 // Fetch config from Firestore database
 export async function fetchRemoteConfig() {
@@ -45,6 +47,19 @@ export async function saveRemoteConfig(configData) {
     return true;
   } catch (error) {
     console.error("Firebase save error:", error);
+    throw error;
+  }
+}
+
+// Upload dynamic image to Firebase Storage
+export async function uploadImageFile(file, filePath) {
+  try {
+    const storageRef = ref(storage, filePath);
+    const snapshot = await uploadBytes(storageRef, file);
+    const downloadURL = await getDownloadURL(snapshot.ref);
+    return downloadURL;
+  } catch (error) {
+    console.error("Storage upload helper failed:", error);
     throw error;
   }
 }

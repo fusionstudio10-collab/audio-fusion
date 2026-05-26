@@ -22,7 +22,7 @@ import {
   Compass
 } from "lucide-react";
 import { defaultConfig } from "../lib/defaultConfig";
-import { saveRemoteConfig } from "../lib/firebase";
+import { saveRemoteConfig, uploadImageFile } from "../lib/firebase";
 
 export default function AdminPanel() {
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -33,6 +33,7 @@ export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState("global");
   const [isSaving, setIsSaving] = useState(false);
   const [config, setConfig] = useState(null);
+  const [uploadingField, setUploadingField] = useState(null);
 
   // Load config & authorization state
   useEffect(() => {
@@ -123,6 +124,43 @@ export default function AdminPanel() {
 
   const handleChange = (e) => {
     setConfig({ ...config, [e.target.name]: e.target.value });
+  };
+
+  const handleImageUpload = async (e, fieldType, indexOrId = null) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Show indicator
+    const uploadKey = `${fieldType}-${indexOrId || 'global'}`;
+    setUploadingField(uploadKey);
+
+    const filePath = `uploads/${Date.now()}-${file.name}`;
+    try {
+      const downloadURL = await uploadImageFile(file, filePath);
+      
+      if (fieldType === "logo") {
+        setConfig({ ...config, logoUrl: downloadURL });
+      } else if (fieldType === "founder") {
+        const updatedFounders = config.founders.map((f) => {
+          if (f.id === indexOrId) {
+            return { ...f, photo: downloadURL };
+          }
+          return f;
+        });
+        setConfig({ ...config, founders: updatedFounders });
+      } else if (fieldType === "showcase") {
+        const updatedPortfolio = [...config.portfolio];
+        updatedPortfolio[indexOrId] = { ...updatedPortfolio[indexOrId], coverUrl: downloadURL };
+        setConfig({ ...config, portfolio: updatedPortfolio });
+      }
+      
+      alert("Image uploaded successfully! Remember to click 'Publish Settings' to make it live.");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to upload image. Please verify Firebase Storage rules are set to test mode.");
+    } finally {
+      setUploadingField(null);
+    }
   };
 
   const handleAudioChange = (e) => {
@@ -463,8 +501,14 @@ export default function AdminPanel() {
                   <input type="text" name="logoText" value={config.logoText} onChange={handleChange} className="w-full bg-[#070708] border border-neutral-900 rounded-lg p-3.5 text-xs text-[var(--text)] focus:outline-none focus:border-neutral-500 font-bold" />
                 </div>
                 <div>
-                  <label className="block text-[9px] font-mono text-[var(--muted)] mb-2 uppercase tracking-widest">Logo / Intro Screen Image URL</label>
-                  <input type="text" name="logoUrl" value={config.logoUrl || ""} onChange={handleChange} className="w-full bg-[#070708] border border-neutral-900 rounded-lg p-3.5 text-xs text-[var(--text)] focus:outline-none focus:border-neutral-500 font-mono" />
+                  <label className="block text-[9px] font-mono text-[var(--muted)] mb-2 uppercase tracking-widest">Logo / Intro Screen Image</label>
+                  <div className="flex gap-2">
+                    <input type="text" name="logoUrl" value={config.logoUrl || ""} onChange={handleChange} className="flex-1 bg-[#070708] border border-neutral-900 rounded-lg p-3.5 text-xs text-[var(--text)] focus:outline-none focus:border-neutral-500 font-mono" />
+                    <label className="px-4 py-3 bg-neutral-900 border border-neutral-800 hover:border-neutral-700 rounded-lg font-bold text-[10px] uppercase tracking-wider text-center cursor-pointer shrink-0 flex items-center justify-center">
+                      {uploadingField === 'logo-global' ? 'Uploading...' : 'Upload'}
+                      <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'logo')} className="hidden" disabled={uploadingField === 'logo-global'} />
+                    </label>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-[9px] font-mono text-[var(--muted)] mb-2 uppercase tracking-widest">Contact Email</label>
@@ -700,8 +744,14 @@ export default function AdminPanel() {
                       <input type="text" value={f.role} onChange={(e) => handleFounderChange(f.id, "role", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)]" />
                     </div>
                     <div className="col-span-1 md:col-span-2">
-                      <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase">Portrait Image URL</label>
-                      <input type="text" value={f.photo} onChange={(e) => handleFounderChange(f.id, "photo", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] font-mono" />
+                      <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase">Portrait Image</label>
+                      <div className="flex gap-2">
+                        <input type="text" value={f.photo} onChange={(e) => handleFounderChange(f.id, "photo", e.target.value)} className="flex-1 bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] font-mono" />
+                        <label className="px-3 py-2 bg-neutral-900 border border-neutral-800 hover:border-neutral-700 rounded font-bold text-[9px] uppercase tracking-wider text-center cursor-pointer shrink-0 flex items-center justify-center">
+                          {uploadingField === `founder-${f.id}` ? 'Uploading...' : 'Upload'}
+                          <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'founder', f.id)} className="hidden" disabled={uploadingField === `founder-${f.id}`} />
+                        </label>
+                      </div>
                     </div>
                     <div className="col-span-1 md:col-span-2">
                       <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase">Personal Statement Quote</label>
@@ -753,8 +803,14 @@ export default function AdminPanel() {
                         <input type="text" value={track.audioUrl} onChange={(e) => handlePortfolioChange(idx, "audioUrl", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] font-mono" />
                       </div>
                       <div className="col-span-1 md:col-span-2">
-                        <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase">Cover Image URL</label>
-                        <input type="text" value={track.coverUrl} onChange={(e) => handlePortfolioChange(idx, "coverUrl", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] font-mono" />
+                        <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase">Cover Image</label>
+                        <div className="flex gap-2">
+                          <input type="text" value={track.coverUrl} onChange={(e) => handlePortfolioChange(idx, "coverUrl", e.target.value)} className="flex-1 bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] font-mono" />
+                          <label className="px-3 py-2 bg-neutral-900 border border-neutral-800 hover:border-neutral-700 rounded font-bold text-[9px] uppercase tracking-wider text-center cursor-pointer shrink-0 flex items-center justify-center">
+                            {uploadingField === `showcase-${idx}` ? 'Uploading...' : 'Upload'}
+                            <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'showcase', idx)} className="hidden" disabled={uploadingField === `showcase-${idx}`} />
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </div>

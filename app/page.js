@@ -47,10 +47,13 @@ export default function Home() {
         if (merged.audios) {
           audioEngine.updateUrls(merged.audios);
         }
-        return;
       }
+    }
+  };
 
-      // Fallback to local storage cache if offline or remote empty
+  useEffect(() => {
+    // Render cache/default synchronously first to avoid blank screen hangs
+    if (typeof window !== "undefined") {
       const stored = localStorage.getItem("audio_fusion_config");
       if (stored) {
         try {
@@ -61,27 +64,27 @@ export default function Home() {
             audioEngine.updateUrls(merged.audios);
           }
         } catch (e) {
-          console.error("Failed to parse config, resetting to default.", e);
           setConfig(defaultConfig);
-          localStorage.setItem("audio_fusion_config", JSON.stringify(defaultConfig));
         }
       } else {
         setConfig(defaultConfig);
-        localStorage.setItem("audio_fusion_config", JSON.stringify(defaultConfig));
         if (defaultConfig.audios) {
           audioEngine.updateUrls(defaultConfig.audios);
         }
       }
     }
-  };
 
-  useEffect(() => {
+    // Load fresh cloud settings in background
     loadConfig();
 
     // 2. Real-time sync if changed in another tab (Admin Panel)
     const handleStorageChange = (e) => {
       if (e.key === "audio_fusion_config") {
-        loadConfig();
+        if (e.newValue) {
+          try {
+            setConfig({ ...defaultConfig, ...JSON.parse(e.newValue) });
+          } catch (err) {}
+        }
       }
     };
     window.addEventListener("storage", handleStorageChange);
