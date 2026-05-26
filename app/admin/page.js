@@ -22,6 +22,7 @@ import {
   Compass
 } from "lucide-react";
 import { defaultConfig } from "../lib/defaultConfig";
+import { saveRemoteConfig } from "../lib/firebase";
 
 export default function AdminPanel() {
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -82,21 +83,41 @@ export default function AdminPanel() {
     sessionStorage.removeItem("audio_fusion_auth");
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!config) return;
     setIsSaving(true);
-    setTimeout(() => {
+    try {
+      // 1. Save to Firebase Firestore database
+      await saveRemoteConfig(config);
+      
+      // 2. Local fallback sync
       localStorage.setItem("audio_fusion_config", JSON.stringify(config));
       setIsSaving(false);
-      alert("Settings saved successfully! Open the studio homepage to see changes live.");
-    }, 600);
+      alert("Settings successfully saved to Firebase Firestore & published live!");
+    } catch (e) {
+      console.error("Failed to save remote config:", e);
+      setIsSaving(false);
+      alert("Failed to save changes online. Saved to local cache instead.");
+      localStorage.setItem("audio_fusion_config", JSON.stringify(config));
+    }
   };
 
-  const handleReset = () => {
-    if (confirm("Reset everything to default values? Custom edits will be overwritten.")) {
-      setConfig(defaultConfig);
-      localStorage.setItem("audio_fusion_config", JSON.stringify(defaultConfig));
-      alert("Config reset to defaults!");
+  const handleReset = async () => {
+    if (confirm("Reset everything to default values both locally and on Firebase?")) {
+      try {
+        setIsSaving(true);
+        await saveRemoteConfig(defaultConfig);
+        setConfig(defaultConfig);
+        localStorage.setItem("audio_fusion_config", JSON.stringify(defaultConfig));
+        setIsSaving(false);
+        alert("Config reset to defaults both locally and on Firebase Firestore!");
+      } catch (e) {
+        console.error("Failed to reset remote config:", e);
+        setConfig(defaultConfig);
+        localStorage.setItem("audio_fusion_config", JSON.stringify(defaultConfig));
+        setIsSaving(false);
+        alert("Reset locally. Failed to reset on Firebase.");
+      }
     }
   };
 

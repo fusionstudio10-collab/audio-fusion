@@ -5,6 +5,7 @@ import { MessageSquare, Send, X, Calendar, Mail, ArrowUpRight, MapPin } from "lu
 
 import { defaultConfig } from "./lib/defaultConfig";
 import audioEngine from "./lib/audioEngine";
+import { fetchRemoteConfig } from "./lib/firebase";
 
 // Core Components
 import CustomCursor from "../components/CustomCursor";
@@ -34,15 +35,28 @@ export default function Home() {
   const lastScroll = useRef(0);
 
   // 1. Sync Configuration from localStorage
-  const loadConfig = () => {
+  // 1. Sync Configuration from Firebase & local cache fallback
+  const loadConfig = async () => {
     if (typeof window !== "undefined") {
+      // First try Firebase Firestore
+      const remote = await fetchRemoteConfig();
+      if (remote) {
+        const merged = { ...defaultConfig, ...remote };
+        setConfig(merged);
+        localStorage.setItem("audio_fusion_config", JSON.stringify(merged));
+        if (merged.audios) {
+          audioEngine.updateUrls(merged.audios);
+        }
+        return;
+      }
+
+      // Fallback to local storage cache if offline or remote empty
       const stored = localStorage.getItem("audio_fusion_config");
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
           const merged = { ...defaultConfig, ...parsed };
           setConfig(merged);
-          // Sync sound URLs with Web Audio engine
           if (merged.audios) {
             audioEngine.updateUrls(merged.audios);
           }
