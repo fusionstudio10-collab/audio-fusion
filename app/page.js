@@ -5,7 +5,6 @@ import { MessageSquare, Send, X, Calendar, Mail, ArrowUpRight, MapPin } from "lu
 
 import { defaultConfig } from "./lib/defaultConfig";
 import audioEngine from "./lib/audioEngine";
-import { fetchRemoteConfig } from "./lib/firebase";
 
 // Core Components
 import CustomCursor from "../components/CustomCursor";
@@ -34,25 +33,10 @@ export default function Home() {
   const [scrolledDown, setScrolledDown] = useState(false);
   const lastScroll = useRef(0);
 
-  // 1. Sync Configuration from localStorage
-  // 1. Sync Configuration from Firebase & local cache fallback
-  const loadConfig = async () => {
-    if (typeof window !== "undefined") {
-      // First try Firebase Firestore
-      const remote = await fetchRemoteConfig();
-      if (remote) {
-        const merged = { ...defaultConfig, ...remote };
-        setConfig(merged);
-        localStorage.setItem("audio_fusion_config", JSON.stringify(merged));
-        if (merged.audios) {
-          audioEngine.updateUrls(merged.audios);
-        }
-      }
-    }
-  };
+  // Load configuration from localStorage (with defaultConfig as fallback)
 
   useEffect(() => {
-    // Render cache/default synchronously first to avoid blank screen hangs
+    // Load fresh settings from localStorage
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("audio_fusion_config");
       if (stored) {
@@ -60,22 +44,15 @@ export default function Home() {
           const parsed = JSON.parse(stored);
           const merged = { ...defaultConfig, ...parsed };
           setConfig(merged);
-          if (merged.audios) {
-            audioEngine.updateUrls(merged.audios);
-          }
+          if (merged.audios) audioEngine.updateUrls(merged.audios);
         } catch (e) {
           setConfig(defaultConfig);
         }
       } else {
         setConfig(defaultConfig);
-        if (defaultConfig.audios) {
-          audioEngine.updateUrls(defaultConfig.audios);
-        }
+        if (defaultConfig.audios) audioEngine.updateUrls(defaultConfig.audios);
       }
     }
-
-    // Load fresh cloud settings in background
-    loadConfig();
 
     // 2. Real-time sync if changed in another tab (Admin Panel)
     const handleStorageChange = (e) => {

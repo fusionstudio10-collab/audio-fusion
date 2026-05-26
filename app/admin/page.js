@@ -22,7 +22,6 @@ import {
   Compass
 } from "lucide-react";
 import { defaultConfig } from "../lib/defaultConfig";
-import { saveRemoteConfig } from "../lib/firebase";
 import { toast } from "../../components/Toast";
 
 export default function AdminPanel() {
@@ -85,37 +84,34 @@ export default function AdminPanel() {
     sessionStorage.removeItem("audio_fusion_auth");
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!config) return;
     setIsSaving(true);
     try {
-      await saveRemoteConfig(config);
       localStorage.setItem("audio_fusion_config", JSON.stringify(config));
-      setIsSaving(false);
-      toast.success("Settings published live to Firebase!");
+      // Notify other open tabs (main site) to reload config
+      window.dispatchEvent(new StorageEvent("storage", {
+        key: "audio_fusion_config",
+        newValue: JSON.stringify(config),
+      }));
+      toast.success("Settings saved & published!");
     } catch (e) {
-      console.error("Failed to save remote config:", e);
+      console.error("Save failed:", e);
+      toast.error("Save failed. Storage might be full.");
+    } finally {
       setIsSaving(false);
-      localStorage.setItem("audio_fusion_config", JSON.stringify(config));
-      toast.warn("Saved locally — Firebase sync failed. Check connection.");
     }
   };
 
-  const handleReset = async () => {
+  const handleReset = () => {
     if (!window.confirm("Reset everything to default values?")) return;
     try {
-      setIsSaving(true);
-      await saveRemoteConfig(defaultConfig);
       setConfig(defaultConfig);
       localStorage.setItem("audio_fusion_config", JSON.stringify(defaultConfig));
-      setIsSaving(false);
-      toast.info("Config reset to defaults and published.");
+      toast.info("Config reset to defaults.");
     } catch (e) {
-      console.error("Failed to reset remote config:", e);
-      setConfig(defaultConfig);
-      localStorage.setItem("audio_fusion_config", JSON.stringify(defaultConfig));
-      setIsSaving(false);
-      toast.warn("Reset locally only — Firebase sync failed.");
+      console.error("Reset failed:", e);
+      toast.error("Reset failed.");
     }
   };
 
