@@ -65,19 +65,17 @@ export default function PortfolioShowcase({ tracks = [], onTrackPlayChange }) {
   if (!tracks || tracks.length === 0) return null;
 
   return (
-    <section id="showcase" className="py-28 px-6 md:px-16 max-w-6xl mx-auto relative z-10">
-      {/* HEADER */}
-      <div className="mb-20 text-center md:text-left reveal-elem">
+    <section id="showcase" className="py-20 sm:py-28 px-5 sm:px-8 md:px-16 max-w-6xl mx-auto relative z-10">
+      <div className="mb-12 sm:mb-20 text-center md:text-left reveal-elem">
         <span className="font-mono text-[10px] tracking-[4px] uppercase text-[var(--neon-purple)]">
           Selected Showcase
         </span>
-        <h2 className="font-[family-name:var(--font-playfair)] italic text-5xl md:text-6xl font-black mt-2">
+        <h2 className="font-[family-name:var(--font-playfair)] italic text-4xl sm:text-5xl md:text-6xl font-black mt-2">
           Featured Works
         </h2>
       </div>
 
-      {/* PORTFOLIO GRID */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-10">
         {tracks.map((track) => {
           const isCurrent = activeTrackId === track.id;
           const isCurrentPlaying = isCurrent && isPlaying;

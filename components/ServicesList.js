@@ -5,19 +5,18 @@ export default function ServicesList({ services = [], onBookClick }) {
   if (!services || services.length === 0) return null;
 
   return (
-    <section id="services" className="py-28 px-6 md:px-16 max-w-6xl mx-auto relative z-10">
+    <section id="services" className="py-20 sm:py-28 px-5 sm:px-8 md:px-16 max-w-6xl mx-auto relative z-10">
       {/* TITLE */}
-      <div className="mb-20 text-center md:text-left reveal-elem">
+      <div className="mb-12 sm:mb-20 text-center md:text-left reveal-elem">
         <span className="font-mono text-[10px] tracking-[4px] uppercase text-[var(--neon-blue)]">
           Rates & Expertise
         </span>
-        <h2 className="font-[family-name:var(--font-playfair)] italic text-5xl md:text-6xl font-black mt-2">
+        <h2 className="font-[family-name:var(--font-playfair)] italic text-4xl sm:text-5xl md:text-6xl font-black mt-2">
           Studio Services
         </h2>
       </div>
 
-      {/* SERVICES GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
         {services.map((svc) => {
           const discountPercent = svc.originalPrice 
             ? Math.round(((svc.originalPrice - svc.price) / svc.originalPrice) * 100)

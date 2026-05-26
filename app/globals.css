@@ -32,6 +32,8 @@
   html {
     scroll-behavior: smooth;
     background-color: var(--bg);
+    /* iOS Safari 100vh fix */
+    height: -webkit-fill-available;
   }
 
   body {
@@ -40,6 +42,23 @@
     font-family: var(--font-syne), sans-serif;
     overflow-x: hidden;
     position: relative;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    /* Prevent text size adjustment on iOS rotation */
+    -webkit-text-size-adjust: 100%;
+    /* Remove iOS tap highlight */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Smooth touch scrolling */
+  * {
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+  }
+
+  /* Better touch targets on mobile */
+  button, a, [role="button"] {
+    touch-action: manipulation;
   }
 
   /* Custom Scrollbar */
