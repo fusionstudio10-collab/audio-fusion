@@ -112,7 +112,7 @@ export default function YoutubeShowcase({ videos = [] }) {
       {/* HORIZONTAL VIDEO CAROUSEL */}
       <div className="flex overflow-x-auto gap-6 sm:gap-10 pb-12 pt-4 px-4 -mx-4 custom-scrollbar snap-x snap-mandatory">
         {filteredVideos.map((vid) => (
-          <div key={vid.id} className="relative aspect-video flex-none w-[85vw] sm:w-[500px] md:w-[600px] snap-center perspective-1000 reveal-elem">
+          <div key={vid.id} className="relative aspect-video flex-none w-[75vw] sm:w-[500px] md:w-[600px] snap-center perspective-1000 reveal-elem">
             <TiltCard>
               <div 
                 className="group relative cursor-pointer overflow-hidden rounded-2xl glass-card border border-neutral-900 w-full h-full hover:border-[var(--gold)]/30 transition-all duration-500"
