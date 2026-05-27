@@ -201,6 +201,16 @@ export default function AdminPanel() {
 
       const { url } = await res.json();
 
+      let oldUrl = null;
+      if (fieldType === "logo") oldUrl = config.logoUrl;
+      else if (fieldType === "founder") oldUrl = config.founders?.find(f => f.id === indexOrId)?.photo;
+      else if (fieldType === "showcase") oldUrl = config.portfolio?.[indexOrId]?.coverUrl;
+      else if (fieldType === "testimonial") oldUrl = config.testimonials?.[indexOrId]?.imageUrl;
+      
+      if (oldUrl && oldUrl.includes("res.cloudinary.com") && oldUrl !== url) {
+        fetch("/api/upload", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: oldUrl }) }).catch(console.error);
+      }
+
       if (fieldType === "logo") {
         setConfig({ ...config, logoUrl: url });
       } else if (fieldType === "founder") {
