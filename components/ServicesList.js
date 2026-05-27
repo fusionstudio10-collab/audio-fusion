@@ -54,7 +54,7 @@ export default function ServicesList({ services = [], onBookClick, whatsappNumbe
   }, {});
 
   return (
-    <section id="services" className="py-20 sm:py-28 px-5 sm:px-8 md:px-16 max-w-6xl mx-auto relative z-10">
+    <section id="services" className="py-14 sm:py-20 md:py-28 px-4 sm:px-8 md:px-16 max-w-6xl mx-auto relative z-10">
       <div className="mb-12 sm:mb-20 text-center md:text-left reveal-elem">
         <span className="font-mono text-[10px] tracking-[4px] uppercase text-[var(--neon-blue)]">
           Rates & Expertise
@@ -64,7 +64,7 @@ export default function ServicesList({ services = [], onBookClick, whatsappNumbe
         </h2>
       </div>
 
-      <div className="space-y-16 sm:space-y-24">
+      <div className="space-y-10 sm:space-y-16 md:space-y-24">
         {Object.entries(groupedServices).map(([category, svcs]) => (
           <div key={category} className="reveal-elem perspective-1000">
             <h3 className="font-[family-name:var(--font-syne)] text-sm sm:text-base font-bold tracking-[3px] uppercase text-[var(--gold)] mb-8 border-b border-neutral-800 pb-3">

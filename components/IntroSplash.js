@@ -71,7 +71,7 @@ export default function IntroSplash({ onEnter, logoText = "AUDIO FUSION", logoUr
       {/* GLITCH SHADOW CONTAINER */}
       <div className="text-center relative z-20 px-6 max-w-lg">
         {/* VHS GLITCH CORNER TEXT */}
-        <div className="absolute top-[-100px] left-[-30px] font-mono text-[9px] tracking-widest text-[var(--neon-green)] opacity-60 text-left">
+        <div className="hidden sm:block absolute top-[-100px] left-[-30px] font-mono text-[9px] tracking-widest text-[var(--neon-green)] opacity-60 text-left">
           <div>PLAY ▶</div>
           <div>MODE: ANALOG TAPE</div>
           <div>AUDIO: COMPRESSED</div>
@@ -87,7 +87,7 @@ export default function IntroSplash({ onEnter, logoText = "AUDIO FUSION", logoUr
           </div>
         ) : (
           <h1 
-            className="font-[family-name:var(--font-playfair)] italic font-black text-5xl md:text-7xl text-[var(--text)] tracking-tight uppercase crt-screen mb-3 select-none"
+            className="font-[family-name:var(--font-playfair)] italic font-black text-4xl sm:text-5xl md:text-7xl text-[var(--text)] tracking-tight uppercase crt-screen mb-3 select-none"
             style={{ textShadow: "2px 0 var(--neon-pink), -2px 0 var(--neon-blue)" }}
           >
             {logoText}

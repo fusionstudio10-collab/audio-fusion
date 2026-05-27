@@ -305,7 +305,7 @@
   /* Snapping slide for intro screen */
   .intro-active {
     overflow: hidden !important;
-    height: 100vh !important;
+    height: 100svh !important;
   }
 
   /* XMCP Inspired Hover Effects */

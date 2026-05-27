@@ -345,7 +345,7 @@ export default function Home() {
 
                 {/* Big title */}
                 <div className="relative z-10 text-center md:text-left reveal-elem">
-                  <h1 className="font-[family-name:var(--font-playfair)] italic font-black text-[clamp(56px,14vw,220px)] leading-[0.85] tracking-[-2px] md:tracking-[-6px] select-none text-[var(--text)]">
+                  <h1 className="font-[family-name:var(--font-playfair)] italic font-black text-[clamp(48px,13vw,220px)] leading-[0.85] tracking-[-2px] md:tracking-[-6px] select-none text-[var(--text)]">
                     <span className="block">Audio</span>
                     <span className="block text-glow" style={{ textShadow: "0 0 40px rgba(197, 160, 89, 0.15)" }}>Fusion</span>
                   </h1>
@@ -405,9 +405,9 @@ export default function Home() {
           else if (sectionId === "contact") {
             sectionContent = (
               <footer key="contact" className="bg-[#0b0b0d]/50 border-t border-neutral-900 pt-16 sm:pt-24 px-5 sm:px-8 md:px-16 pb-10 z-10 relative">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 mb-12 lg:mb-16">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-10 lg:gap-16 mb-12 lg:mb-16">
                   {/* Left columns */}
-                  <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-10">
+                  <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-10">
                     <div>
                       <h2 className="font-[family-name:var(--font-playfair)] italic text-2xl sm:text-3xl font-black mb-4 text-[var(--text)]">
                         {config.name}

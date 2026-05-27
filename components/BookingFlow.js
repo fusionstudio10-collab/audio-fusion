@@ -73,7 +73,7 @@ export default function BookingFlow({ services = [], preselectedService = "", wh
   };
 
   return (
-    <section id="booking" className="py-20 sm:py-28 px-5 sm:px-8 md:px-16 max-w-4xl mx-auto relative z-10">
+    <section id="booking" className="py-14 sm:py-20 md:py-28 px-4 sm:px-8 md:px-16 max-w-4xl mx-auto relative z-10">
       <div className="text-center mb-10 sm:mb-16 reveal-elem">
         <span className="font-mono text-[10px] tracking-[4px] uppercase text-[var(--gold)]">
           Reserve Your Slot

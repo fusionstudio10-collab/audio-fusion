@@ -8,7 +8,7 @@ export default function TestimonialMarquee({ testimonials = [] }) {
   const marqueeItems = [...testimonials, ...testimonials, ...testimonials, ...testimonials];
 
   return (
-    <section className="py-20 sm:py-28 bg-[#070708] relative overflow-hidden z-10 border-t border-neutral-900">
+    <section className="py-14 sm:py-20 md:py-28 bg-[#070708] relative overflow-hidden z-10 border-t border-neutral-900">
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[var(--gold)]/5 via-[#070708]/80 to-[#070708] z-0" />
       
       <div className="text-center mb-12 sm:mb-16 relative z-10 reveal-elem px-5">

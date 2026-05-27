@@ -102,7 +102,7 @@ export default function PortfolioShowcase({ tracks = [], onTrackPlayChange }) {
   if (!tracks || tracks.length === 0) return null;
 
   return (
-    <section id="showcase" className="py-20 sm:py-28 px-5 sm:px-8 md:px-16 max-w-6xl mx-auto relative z-10">
+    <section id="showcase" className="py-14 sm:py-20 md:py-28 px-4 sm:px-8 md:px-16 max-w-6xl mx-auto relative z-10">
       <div className="mb-12 sm:mb-20 text-center md:text-left reveal-elem">
         <span className="font-mono text-[10px] tracking-[4px] uppercase text-[var(--neon-purple)]">
           Selected Showcase
