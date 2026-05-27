@@ -125,6 +125,17 @@ export const defaultConfig = {
     }
   ],
 
+  posters: [
+    {
+      id: "p1",
+      title: "Silent Kinetics",
+      tag: "Identity / 2026",
+      type: "poster", // 'poster' for 1:1, 'thumbnail' for 16:9
+      description: "Exploring fluid dynamics in minimalist structural forms. Designed for digital exhibition panels.",
+      imageUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80"
+    }
+  ],
+
   portfolio: [
     {
       id: "track-1",
@@ -187,5 +198,14 @@ export const defaultConfig = {
     "custom-studio-philosophy": { type: "color", url: "", overlayOpacity: 0 }
   },
 
-  sectionsOrder: ["hero", "custom-studio-philosophy", "founders", "youtube-works", "services", "booking", "contact"]
+  sectionsOrder: [
+    "hero",
+    "founders",
+    "services",
+    "posters",
+    "showcase",
+    "youtube-works",
+    "booking",
+    "contact"
+  ],
 };

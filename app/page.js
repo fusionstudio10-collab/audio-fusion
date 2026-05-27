@@ -18,6 +18,7 @@ import ServicesList from "../components/ServicesList";
 import BookingFlow from "../components/BookingFlow";
 import PortfolioShowcase from "../components/PortfolioShowcase";
 import YoutubeShowcase from "../components/YoutubeShowcase";
+import PosterGallery from "../components/PosterGallery";
 
 const SectionWrapper = ({ id, bgConfig, children }) => {
   const ref = useRef(null);
@@ -360,7 +361,11 @@ export default function Home() {
           else if (sectionId === "founders") {
             sectionContent = <FounderShowcase key="founders" founders={config.founders} />;
           }
-          // ── SHOWCASE ──────────────────────────────────────
+          // ── POSTERS ─────────────────────────────────────────
+          else if (sectionId === "posters") {
+            sectionContent = <PosterGallery key="posters" posters={config.posters} />;
+          }
+          // ── PORTFOLIO / SHOWCASE ──────────────────────────────────────
           else if (sectionId === "showcase") {
             sectionContent = <PortfolioShowcase key="showcase" tracks={config.portfolio} onTrackPlayChange={(p) => setIsPlayingTrack(p)} />;
           }

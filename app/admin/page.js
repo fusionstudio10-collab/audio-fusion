@@ -446,6 +446,56 @@ export default function AdminPanel() {
     setConfig({ ...config, youtubeWorks: updated });
   };
 
+  // --- POSTERS HANDLERS ---
+  const handlePosterChange = (index, field, value) => {
+    const updated = [...(config.posters || [])];
+    updated[index] = { ...updated[index], [field]: value };
+    setConfig({ ...config, posters: updated });
+  };
+
+  const addPoster = () => {
+    const newPoster = {
+      id: `poster-${Date.now()}`,
+      title: "New Poster",
+      tag: "Category / Year",
+      description: "A brief description about this visual asset.",
+      imageUrl: ""
+    };
+    setConfig({ ...config, posters: [...(config.posters || []), newPoster] });
+  };
+
+  const removePoster = (index) => {
+    const updated = (config.posters || []).filter((_, idx) => idx !== index);
+    setConfig({ ...config, posters: updated });
+  };
+
+  const handlePosterUpload = async (e, index) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingField(`poster-${index}`);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", `audio-fusion/posters`);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error("Upload failed");
+      const { url } = await res.json();
+      
+      handlePosterChange(index, "imageUrl", url);
+      toast.success("Poster uploaded! Click Publish Settings to save.");
+    } catch (err) {
+      toast.error(`Upload failed: ${err.message}`);
+    } finally {
+      setUploadingField(null);
+    }
+  };
+
   const [fetchingYoutube, setFetchingYoutube] = useState(null);
 
   const handleFetchYoutubeInfo = async (index, videoId) => {
@@ -600,6 +650,7 @@ export default function AdminPanel() {
     { id: "backgrounds", icon: <ImageIcon size={16} />, label: "Section Backgrounds & FX" },
     { id: "founders", icon: <Users size={16} />, label: "Founders Profiles" },
     { id: "youtube-works", icon: <Video size={16} />, label: "YouTube Works" },
+    { id: "posters", icon: <ImageIcon size={16} />, label: "Posters & Thumbnails" },
     { id: "services", icon: <FileText size={16} />, label: "Services Pricing" },
     { id: "promotions", icon: <Tag size={16} />, label: "Promotions & Offers" },
   ];
@@ -1091,6 +1142,75 @@ export default function AdminPanel() {
                             Delete
                           </button>
                         </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5B: POSTERS & THUMBNAILS */}
+          {activeTab === "posters" && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center border-b border-neutral-900 pb-4">
+                <span className="text-[10px] uppercase font-bold text-[var(--muted)]">Manage Visual Assets ({config.posters?.length || 0})</span>
+                <button 
+                  onClick={addPoster}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--gold)]/10 text-[var(--gold)] border border-[var(--gold)]/20 hover:bg-[var(--gold)] hover:text-black rounded text-[9px] font-bold uppercase tracking-widest transition-colors"
+                >
+                  <Plus size={12} /> Add Poster
+                </button>
+              </div>
+              <div className="space-y-4">
+                {(config.posters || []).map((poster, index) => (
+                  <div key={poster.id} className="p-6 border border-neutral-800 rounded-xl space-y-4 relative bg-[#070708] hover:border-neutral-700 transition-colors">
+                    <button 
+                      onClick={() => removePoster(index)}
+                      className="absolute top-4 right-4 text-[var(--muted)] hover:text-red-500 p-1.5 transition-colors"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                      <div className="col-span-1 md:col-span-2 flex items-center gap-4">
+                        {poster.imageUrl && (
+                          <div className="w-16 h-16 rounded overflow-hidden flex-shrink-0 bg-neutral-900">
+                            <img src={poster.imageUrl} className="w-full h-full object-cover" alt="" />
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Image URL (Upload via button or paste)</label>
+                          <div className="flex gap-2">
+                            <input type="text" value={poster.imageUrl} onChange={(e) => handlePosterChange(index, "imageUrl", e.target.value)} className="w-full bg-neutral-900/50 border border-neutral-800 rounded p-3 text-xs text-[var(--text)]" />
+                            <label className="flex items-center justify-center px-4 bg-neutral-800 hover:bg-neutral-700 rounded cursor-pointer border border-neutral-700 text-[10px] uppercase font-bold transition-colors">
+                              {uploadingField === `poster-${index}` ? "Wait..." : "Upload"}
+                              <input type="file" className="hidden" accept="image/*" onChange={(e) => handlePosterUpload(e, index)} />
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Title</label>
+                        <input type="text" value={poster.title} onChange={(e) => handlePosterChange(index, "title", e.target.value)} className="w-full bg-neutral-900/50 border border-neutral-800 rounded p-3 text-sm text-[var(--text)] font-bold" />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Tag / Category</label>
+                        <input type="text" value={poster.tag} onChange={(e) => handlePosterChange(index, "tag", e.target.value)} className="w-full bg-neutral-900/50 border border-neutral-800 rounded p-3 text-xs text-[var(--gold)] font-mono uppercase tracking-widest" />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Image Type / Aspect Ratio</label>
+                        <select 
+                          value={poster.type || "poster"} 
+                          onChange={(e) => handlePosterChange(index, "type", e.target.value)}
+                          className="w-full bg-neutral-900/50 border border-neutral-800 rounded p-3 text-xs text-[var(--text)] font-mono uppercase tracking-widest cursor-pointer"
+                        >
+                          <option value="poster">Poster (1:1 Square)</option>
+                          <option value="thumbnail">Thumbnail (16:9 Wide)</option>
+                        </select>
+                      </div>
+                      <div className="col-span-1 md:col-span-2">
+                        <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Description (Revealed on hover / popup)</label>
+                        <textarea rows="2" value={poster.description} onChange={(e) => handlePosterChange(index, "description", e.target.value)} className="w-full bg-neutral-900/50 border border-neutral-800 rounded p-3 text-xs text-[var(--text)] leading-relaxed" />
                       </div>
                     </div>
                   </div>

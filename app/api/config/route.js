@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { Redis } from "@upstash/redis";
+
+export const dynamic = 'force-dynamic';
 import { defaultConfig } from "../../lib/defaultConfig";
 
-// Initialize Upstash Redis client
-// It automatically uses UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN
-const redis = Redis.fromEnv();
+// Initialize Upstash Redis client explicitly with KV variables
+const redis = new Redis({
+  url: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN,
+});
 
 export async function GET() {
   try {
@@ -12,6 +16,17 @@ export async function GET() {
     if (!config) {
       return NextResponse.json(defaultConfig);
     }
+    
+    // Fallback: If DB has an older sectionsOrder without 'posters', inject it
+    if (config.sectionsOrder && !config.sectionsOrder.includes("posters")) {
+      const servicesIndex = config.sectionsOrder.indexOf("services");
+      if (servicesIndex !== -1) {
+        config.sectionsOrder.splice(servicesIndex + 1, 0, "posters");
+      } else {
+        config.sectionsOrder.push("posters");
+      }
+    }
+    
     return NextResponse.json(config);
   } catch (error) {
     console.error("Vercel Upstash KV GET Error:", error);
