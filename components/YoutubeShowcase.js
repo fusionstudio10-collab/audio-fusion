@@ -1,7 +1,50 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Play, X } from "lucide-react";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import audioEngine from "../app/lib/audioEngine";
+
+function TiltCard({ children }) {
+  const ref = useRef(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const mouseXSpring = useSpring(x, { stiffness: 150, damping: 20 });
+  const mouseYSpring = useSpring(y, { stiffness: 150, damping: 20 });
+
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["10deg", "-10deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-10deg", "10deg"]);
+
+  const handleMouseMove = (e) => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    x.set(mouseX / width - 0.5);
+    y.set(mouseY / height - 0.5);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      ref={ref}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+      className="h-full w-full relative group perspective-1000"
+    >
+      <div style={{ transform: "translateZ(30px)", transformStyle: "preserve-3d" }} className="h-full w-full">
+        {children}
+      </div>
+    </motion.div>
+  );
+}
 
 export default function YoutubeShowcase({ videos = [] }) {
   const [activeVideoId, setActiveVideoId] = useState(null);
@@ -69,41 +112,44 @@ export default function YoutubeShowcase({ videos = [] }) {
       {/* HORIZONTAL VIDEO CAROUSEL */}
       <div className="flex overflow-x-auto gap-6 sm:gap-10 pb-12 pt-4 px-4 -mx-4 custom-scrollbar snap-x snap-mandatory">
         {filteredVideos.map((vid) => (
-          <div 
-            key={vid.id} 
-            className="group relative cursor-pointer overflow-hidden rounded-2xl glass-card border border-neutral-900 aspect-video flex-none w-[85vw] sm:w-[500px] md:w-[600px] snap-center hover:border-[var(--gold)]/30 transition-all duration-500 reveal-elem"
-            onClick={() => handlePlay(vid.videoId)}
-          >
-            {/* THUMBNAIL */}
-            <div 
-              className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-              style={{ backgroundImage: `url(${vid.thumbnail || `https://img.youtube.com/vi/${vid.videoId}/maxresdefault.jpg`})` }}
-            />
-            {/* OVERLAY */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
-            
-            {/* PLAY BUTTON (CENTER) */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-14 h-14 rounded-full bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center group-hover:bg-[#ff0000] group-hover:border-[#ff0000] group-hover:scale-110 transition-all duration-300">
-                <Play className="w-5 h-5 text-white ml-1 fill-white" />
-              </div>
-            </div>
+          <div key={vid.id} className="relative aspect-video flex-none w-[85vw] sm:w-[500px] md:w-[600px] snap-center perspective-1000 reveal-elem">
+            <TiltCard>
+              <div 
+                className="group relative cursor-pointer overflow-hidden rounded-2xl glass-card border border-neutral-900 w-full h-full hover:border-[var(--gold)]/30 transition-all duration-500"
+                onClick={() => handlePlay(vid.videoId)}
+              >
+                {/* THUMBNAIL */}
+                <div 
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                  style={{ backgroundImage: `url(${vid.thumbnail || `https://img.youtube.com/vi/${vid.videoId}/maxresdefault.jpg`})` }}
+                />
+                {/* OVERLAY */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
+                
+                {/* PLAY BUTTON (CENTER) */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-full bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center group-hover:bg-[#ff0000] group-hover:border-[#ff0000] group-hover:scale-110 transition-all duration-300">
+                    <Play className="w-5 h-5 text-white ml-1 fill-white" />
+                  </div>
+                </div>
 
-            {/* TITLE & TAGS */}
-            <div className="absolute bottom-6 left-6 right-6">
-              {vid.tags && (
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {vid.tags.split(',').map((tag, i) => (
-                    <span key={i} className="px-2 py-0.5 text-[9px] font-mono tracking-widest uppercase border border-[var(--gold)]/30 text-[var(--gold)] rounded-sm bg-black/40 backdrop-blur-sm">
-                      {tag.trim()}
-                    </span>
-                  ))}
+                {/* TITLE & TAGS */}
+                <div className="absolute bottom-6 left-6 right-6">
+                  {vid.tags && (
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {vid.tags.split(',').map((tag, i) => (
+                        <span key={i} className="px-2 py-0.5 text-[9px] font-mono tracking-widest uppercase border border-[var(--gold)]/30 text-[var(--gold)] rounded-sm bg-black/40 backdrop-blur-sm">
+                          {tag.trim()}
+                        </span>
+                      ))}
                 </div>
               )}
               <h3 className="font-[family-name:var(--font-playfair)] italic text-xl sm:text-2xl font-bold text-white tracking-wide group-hover:text-[var(--gold)] transition-colors line-clamp-2">
                 {vid.title}
               </h3>
             </div>
+          </div>
+          </TiltCard>
           </div>
         ))}
       </div>

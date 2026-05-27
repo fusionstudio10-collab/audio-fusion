@@ -1,6 +1,49 @@
 "use client";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { X } from "lucide-react";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+
+function TiltCard({ children }) {
+  const ref = useRef(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const mouseXSpring = useSpring(x, { stiffness: 150, damping: 20 });
+  const mouseYSpring = useSpring(y, { stiffness: 150, damping: 20 });
+
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["10deg", "-10deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-10deg", "10deg"]);
+
+  const handleMouseMove = (e) => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    x.set(mouseX / width - 0.5);
+    y.set(mouseY / height - 0.5);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      ref={ref}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+      className="h-full w-full relative group perspective-1000"
+    >
+      <div style={{ transform: "translateZ(20px)", transformStyle: "preserve-3d" }} className="h-full w-full">
+        {children}
+      </div>
+    </motion.div>
+  );
+}
 
 export default function PosterGallery({ posters = [] }) {
   if (!posters || posters.length === 0) return null;
@@ -160,8 +203,7 @@ export default function PosterGallery({ posters = [] }) {
           background: #121214;
           border: 1px solid rgba(255, 255, 255, 0.05);
           cursor: pointer;
-          transition: filter 0.6s ease, opacity 0.6s ease, transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.5s ease;
-          transform: scale(1);
+          transition: filter 0.6s ease, opacity 0.6s ease, box-shadow 0.5s ease;
         }
         
         .carousel-item-img {
@@ -195,11 +237,9 @@ export default function PosterGallery({ posters = [] }) {
         .carousel-ring.has-hover .carousel-item:not(.is-hovered) .carousel-card {
           filter: blur(6px) grayscale(50%) brightness(0.5);
           opacity: 0.4;
-          transform: scale(0.95);
         }
         
         .carousel-ring.has-hover .carousel-item.is-hovered .carousel-card {
-          transform: scale(1.15) translateZ(30px);
           box-shadow: 0 0 50px rgba(255, 255, 255, 0.1);
           border-color: rgba(255, 255, 255, 0.3);
         }
@@ -226,13 +266,21 @@ export default function PosterGallery({ posters = [] }) {
                   }
                 }}
               >
-                <div className={`carousel-card ${isPoster ? 'type-poster' : 'type-thumbnail'}`}>
-                  <img src={poster.imageUrl} alt={poster.title} className="carousel-item-img draggable-none" draggable={false} />
-                  <div className="absolute inset-0 pointer-events-none rounded-[16px] border border-white/10 opacity-50 mix-blend-overlay"></div>
-                  <div className="carousel-content">
-                    <div className="text-[9px] uppercase tracking-widest text-white/50 mb-1">{poster.tag}</div>
-                    <h3 className="text-xl font-bold font-sans tracking-tight leading-tight">{poster.title}</h3>
-                  </div>
+                <div className="w-full h-full relative perspective-1000">
+                  <TiltCard>
+                    <div 
+                      className={`carousel-card ${isPoster ? 'type-poster' : 'type-thumbnail'}`}
+                      data-cursor
+                      data-cursor-text="DRAG/CLICK"
+                    >
+                      <img src={poster.imageUrl} alt={poster.title} className="carousel-item-img draggable-none" draggable={false} />
+                      <div className="absolute inset-0 pointer-events-none rounded-[16px] border border-white/10 opacity-50 mix-blend-overlay"></div>
+                      <div className="carousel-content">
+                        <div className="text-[9px] uppercase tracking-widest text-white/50 mb-1">{poster.tag}</div>
+                        <h3 className="text-xl font-bold font-sans tracking-tight leading-tight">{poster.title}</h3>
+                      </div>
+                    </div>
+                  </TiltCard>
                 </div>
               </div>
             );

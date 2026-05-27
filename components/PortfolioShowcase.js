@@ -1,6 +1,48 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { Play, Pause, Volume2 } from "lucide-react";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+
+function TiltCard({ children }) {
+  const ref = useRef(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const mouseXSpring = useSpring(x, { stiffness: 150, damping: 20 });
+  const mouseYSpring = useSpring(y, { stiffness: 150, damping: 20 });
+
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["10deg", "-10deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-10deg", "10deg"]);
+
+  const handleMouseMove = (e) => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    x.set(mouseX / width - 0.5);
+    y.set(mouseY / height - 0.5);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      ref={ref}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+      className="h-full w-full relative group perspective-1000"
+    >
+      <div style={{ transform: "translateZ(30px)", transformStyle: "preserve-3d" }} className="h-full w-full">
+        {children}
+      </div>
+    </motion.div>
+  );
+}
 
 export default function PortfolioShowcase({ tracks = [], onTrackPlayChange }) {
   const [activeTrackId, setActiveTrackId] = useState(null);
@@ -8,7 +50,6 @@ export default function PortfolioShowcase({ tracks = [], onTrackPlayChange }) {
   const audioRef = useRef(null);
 
   useEffect(() => {
-    // Cleanup audio element on unmount
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
@@ -17,9 +58,7 @@ export default function PortfolioShowcase({ tracks = [], onTrackPlayChange }) {
   }, []);
 
   const handlePlayPause = (track) => {
-    if (!audioRef.current) {
-      audioRef.current = new Audio();
-    }
+    if (!audioRef.current) audioRef.current = new Audio();
 
     if (activeTrackId === track.id) {
       if (isPlaying) {
@@ -32,7 +71,6 @@ export default function PortfolioShowcase({ tracks = [], onTrackPlayChange }) {
         if (onTrackPlayChange) onTrackPlayChange(true);
       }
     } else {
-      // Stop previous
       audioRef.current.pause();
       audioRef.current.src = track.audioUrl;
       audioRef.current.load();
@@ -47,7 +85,6 @@ export default function PortfolioShowcase({ tracks = [], onTrackPlayChange }) {
     }
   };
 
-  // Attach ended listener whenever the active track changes — fixes stale closure
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -81,22 +118,23 @@ export default function PortfolioShowcase({ tracks = [], onTrackPlayChange }) {
           const isCurrentPlaying = isCurrent && isPlaying;
 
           return (
-            <div
-              key={track.id}
-              className="group relative rounded-2xl overflow-hidden border border-neutral-900 bg-[var(--bg-card)] transition-all duration-500 hover:border-neutral-700"
-            >
-              {/* IMAGE / COVER CONTAINER */}
-              <div 
-                className="relative h-[340px] w-full overflow-hidden"
-                data-cursor
-                data-cursor-text={isCurrentPlaying ? "PAUSE" : "PLAY"}
-                onClick={() => handlePlayPause(track)}
-              >
-                <img
-                  src={track.coverUrl}
-                  alt={track.title}
-                  className="w-full h-full object-cover grayscale contrast-110 brightness-75 group-hover:scale-105 group-hover:grayscale-0 group-hover:brightness-90 transition-all duration-700 ease-out"
-                />
+            <div key={track.id} className="relative perspective-1000">
+              <TiltCard>
+                <div
+                  className="group relative rounded-2xl overflow-hidden border border-neutral-900 bg-[var(--bg-card)] transition-all duration-500 hover:border-white/20 hover:shadow-[0_0_40px_rgba(255,255,255,0.05)]"
+                >
+                  {/* IMAGE / COVER CONTAINER */}
+                  <div 
+                    className="relative h-[340px] w-full overflow-hidden"
+                    data-cursor
+                    data-cursor-text={isCurrentPlaying ? "PAUSE" : "PLAY"}
+                    onClick={() => handlePlayPause(track)}
+                  >
+                    <img
+                      src={track.coverUrl}
+                      alt={track.title}
+                      className="w-full h-full object-cover grayscale contrast-110 brightness-75 group-hover:scale-105 group-hover:grayscale-0 group-hover:brightness-90 transition-all duration-700 ease-out"
+                    />
 
                 {/* PLAY / PAUSE FLOATING GLOW BUTTON */}
                 <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/15 transition-colors duration-500">
@@ -140,6 +178,8 @@ export default function PortfolioShowcase({ tracks = [], onTrackPlayChange }) {
                   </p>
                 </div>
               </div>
+              </div>
+            </TiltCard>
             </div>
           );
         })}

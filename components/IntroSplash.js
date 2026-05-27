@@ -78,7 +78,7 @@ export default function IntroSplash({ onEnter, logoText = "AUDIO FUSION", logoUr
         </div>
 
         {logoUrl ? (
-          <div className="w-56 h-56 sm:w-64 sm:h-64 mx-auto mb-6 relative flex items-center justify-center">
+          <div className="w-80 h-80 sm:w-96 sm:h-96 mx-auto mb-6 relative flex items-center justify-center">
             <img
               src={logoUrl}
               alt={logoText}
@@ -95,7 +95,7 @@ export default function IntroSplash({ onEnter, logoText = "AUDIO FUSION", logoUr
         )}
         
         <p className="font-[family-name:var(--font-syne)] text-[9px] tracking-[4px] uppercase text-[var(--muted)] mb-10 select-none">
-          {tagline}
+          {tagline || 'YOUR DESIGN-LED AUDIO CO-FOUNDER. HANDS-ON. WITH NO OVERHEAD.'}
         </p>
 
         {/* PROGRESS BAR */}

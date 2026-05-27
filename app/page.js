@@ -331,7 +331,7 @@ export default function Home() {
 
                 {/* Hero intro — top right on desktop, center on mobile */}
                 <div className="relative md:absolute md:top-1/2 md:-translate-y-1/2 md:right-16 max-w-full md:max-w-[360px] z-10 space-y-5 text-center md:text-left reveal-elem mb-8 md:mb-0">
-                  <p className="font-[family-name:var(--font-instrument)] italic text-base sm:text-lg md:text-xl leading-relaxed text-[var(--muted)]">
+                  <p className="font-sans text-base sm:text-lg md:text-xl leading-relaxed text-[var(--muted)]">
                     {config.heroIntro}
                   </p>
                 </div>
@@ -346,8 +346,8 @@ export default function Home() {
 
                 {/* Tagline */}
                 <div className="flex flex-col md:flex-row items-center gap-6 mt-8 z-10 relative reveal-elem">
-                  <p className="font-[family-name:var(--font-instrument)] italic text-lg sm:text-xl md:text-2xl text-[var(--muted)] max-w-lg leading-relaxed text-center md:text-left">
-                    {config.tagline}
+                  <p className="font-sans text-lg sm:text-xl md:text-xl text-[var(--muted)] max-w-lg leading-relaxed text-center md:text-left font-medium tracking-wide">
+                    {config.tagline || 'Your design-led audio co-founder. Hands-on. With No Overhead.'}
                   </p>
                   <div className="hidden md:flex items-center gap-3 text-[10px] tracking-[3px] uppercase text-[var(--muted)] ml-auto font-bold font-[family-name:var(--font-syne)]">
                     <div className="w-[60px] h-[1px] bg-neutral-800" />
@@ -401,7 +401,7 @@ export default function Home() {
                       <h2 className="font-[family-name:var(--font-playfair)] italic text-2xl sm:text-3xl font-black mb-4 text-[var(--text)]">
                         {config.name}
                       </h2>
-                      <p className="font-[family-name:var(--font-instrument)] italic text-sm sm:text-base text-[var(--muted)] leading-relaxed">
+                      <p className="font-sans text-sm sm:text-base text-[var(--muted)] leading-relaxed">
                         {config.philosophy}
                       </p>
                     </div>
@@ -434,7 +434,7 @@ export default function Home() {
                       <h4 className="font-[family-name:var(--font-syne)] text-[10px] font-bold tracking-[3px] uppercase mb-5 text-[var(--text)]">
                         Studio Hours
                       </h4>
-                      <p className="font-[family-name:var(--font-instrument)] italic text-sm sm:text-[15px] text-[var(--muted)] leading-relaxed">
+                      <p className="font-sans text-sm sm:text-[15px] text-[var(--muted)] leading-relaxed">
                         Studio operates 24/7 for booked recording slots. Consultations by appointment only.
                       </p>
                     </div>
@@ -443,7 +443,11 @@ export default function Home() {
                   {/* Map — full width on mobile, right column on desktop */}
                   <div className="lg:col-span-4 h-52 sm:h-64 lg:h-auto min-h-[200px] rounded-xl overflow-hidden glass-card border border-neutral-900/80 relative">
                     <iframe
-                      src={config.mapUrl || "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3770.8415310045903!2d72.8459459!3d19.0707038!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7cf6c4d6687b1%3A0xde402a14d945d596!2sAudio%20Fusion%20Studio!5e0!3m2!1sen!2sin!4v1716762391000!5m2!1sen!2sin"}
+                      src={
+                        config.mapUrl
+                          ? (config.mapUrl.match(/src="([^"]+)"/) ? config.mapUrl.match(/src="([^"]+)"/)[1] : config.mapUrl)
+                          : "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3770.8415310045903!2d72.8459459!3d19.0707038!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7cf6c4d6687b1%3A0xde402a14d945d596!2sAudio%20Fusion%20Studio!5e0!3m2!1sen!2sin!4v1716762391000!5m2!1sen!2sin"
+                      }
                       className="w-full h-full border-0 grayscale invert contrast-[1.2] opacity-60 hover:opacity-100 hover:grayscale-0 hover:invert-0 transition-all duration-700"
                       allowFullScreen=""
                       loading="lazy"
@@ -469,7 +473,7 @@ export default function Home() {
                   <section key={customSec.id} id={customSec.id} className="py-20 sm:py-28 px-5 sm:px-8 md:px-16 max-w-5xl mx-auto reveal-elem">
                   <span className="text-[10px] tracking-[4px] uppercase font-bold text-[var(--gold)] mb-3 block font-[family-name:var(--font-syne)]">{customSec.subtitle}</span>
                   <h2 className="font-[family-name:var(--font-playfair)] italic text-3xl sm:text-4xl md:text-6xl font-black mb-8 leading-tight text-white">{customSec.title}</h2>
-                  <p className="font-[family-name:var(--font-instrument)] italic text-base sm:text-lg md:text-2xl text-[var(--muted)] leading-relaxed whitespace-pre-line">{customSec.content}</p>
+                  <p className="font-sans text-base sm:text-lg md:text-2xl text-[var(--muted)] leading-relaxed whitespace-pre-line">{customSec.content}</p>
                 </section>
               );
             } else if (customSec.layout === "cards-grid") {
@@ -477,12 +481,12 @@ export default function Home() {
                 <section key={customSec.id} id={customSec.id} className="py-20 sm:py-28 px-5 sm:px-8 md:px-16 max-w-6xl mx-auto reveal-elem">
                   <span className="text-[10px] tracking-[4px] uppercase font-bold text-[var(--gold)] mb-3 block font-[family-name:var(--font-syne)]">{customSec.subtitle}</span>
                   <h2 className="font-[family-name:var(--font-playfair)] italic text-3xl sm:text-4xl md:text-6xl font-black mb-8 sm:mb-12 leading-tight text-white">{customSec.title}</h2>
-                  {customSec.content && <p className="font-[family-name:var(--font-instrument)] italic text-base sm:text-lg text-[var(--muted)] mb-8 sm:mb-12 leading-relaxed max-w-3xl">{customSec.content}</p>}
+                  {customSec.content && <p className="font-sans text-base sm:text-lg text-[var(--muted)] mb-8 sm:mb-12 leading-relaxed max-w-3xl">{customSec.content}</p>}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
                     {customSec.items?.map((item, idx) => (
                       <div key={idx} className="p-6 sm:p-8 glass-card border border-neutral-900/60 rounded-2xl space-y-4 hover:border-[var(--gold)]/25 transition-all duration-300">
                         <h3 className="font-[family-name:var(--font-playfair)] italic text-xl sm:text-2xl font-bold text-white">{item.title}</h3>
-                        <p className="font-[family-name:var(--font-instrument)] italic text-sm sm:text-base text-[var(--muted)] leading-relaxed">{item.desc}</p>
+                        <p className="font-sans text-sm sm:text-base text-[var(--muted)] leading-relaxed">{item.desc}</p>
                       </div>
                     ))}
                   </div>
@@ -495,7 +499,7 @@ export default function Home() {
                     <div className="lg:col-span-7 space-y-5">
                       <span className="text-[10px] tracking-[4px] uppercase font-bold text-[var(--gold)] block font-[family-name:var(--font-syne)]">{customSec.subtitle}</span>
                       <h2 className="font-[family-name:var(--font-playfair)] italic text-3xl sm:text-4xl md:text-6xl font-black leading-tight text-white">{customSec.title}</h2>
-                      <p className="font-[family-name:var(--font-instrument)] italic text-base sm:text-lg md:text-xl text-[var(--muted)] leading-relaxed whitespace-pre-line">{customSec.content}</p>
+                      <p className="font-sans text-base sm:text-lg md:text-xl text-[var(--muted)] leading-relaxed whitespace-pre-line">{customSec.content}</p>
                     </div>
                     <div className="lg:col-span-5 space-y-4">
                       {customSec.items?.map((item, idx) => (
