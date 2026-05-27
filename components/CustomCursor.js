@@ -9,9 +9,9 @@ export default function CustomCursor() {
 
   useEffect(() => {
     if (window.location.pathname.startsWith("/admin")) {
-      setIsVisible(false);
+      const frameId = requestAnimationFrame(() => setIsVisible(false));
       document.documentElement.classList.remove("hide-default-cursor");
-      return;
+      return () => cancelAnimationFrame(frameId);
     }
 
     let mouseX = 0;

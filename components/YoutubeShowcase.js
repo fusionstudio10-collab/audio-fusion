@@ -50,6 +50,17 @@ export default function YoutubeShowcase({ videos = [] }) {
   const [activeVideoId, setActiveVideoId] = useState(null);
   const [activeFilter, setActiveFilter] = useState("All");
 
+  useEffect(() => {
+    if (activeVideoId) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [activeVideoId]);
+
   if (!videos || videos.length === 0) return null;
 
   // Extract all unique tags
@@ -66,16 +77,15 @@ export default function YoutubeShowcase({ videos = [] }) {
         (v.tags || "").split(",").map(t => t.trim()).includes(activeFilter)
       );
 
+
   const handlePlay = (videoId) => {
     audioEngine.playClick();
     setActiveVideoId(videoId);
-    document.body.style.overflow = "hidden"; // Prevent scrolling when modal is open
   };
 
   const closeVideo = () => {
     audioEngine.playClick();
     setActiveVideoId(null);
-    document.body.style.overflow = "unset";
   };
 
   return (

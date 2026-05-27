@@ -11,8 +11,11 @@ export default function BookingFlow({ services = [], preselectedService = "", wh
 
   useEffect(() => {
     if (preselectedService) {
-      setSelectedService(preselectedService);
-      setStep(2);
+      const frameId = requestAnimationFrame(() => {
+        setSelectedService(preselectedService);
+        setStep(2);
+      });
+      return () => cancelAnimationFrame(frameId);
     }
   }, [preselectedService]);
 

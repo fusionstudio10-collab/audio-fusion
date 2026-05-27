@@ -1,5 +1,6 @@
 "use client";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import { X } from "lucide-react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 
@@ -46,11 +47,6 @@ function TiltCard({ children }) {
 }
 
 export default function PosterGallery({ posters = [] }) {
-  if (!posters || posters.length === 0) return null;
-
-  // Ensure enough items to form a ring
-  const displayItems = posters.length < 5 ? [...posters, ...posters, ...posters].slice(0, 8) : posters;
-  
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [selectedPoster, setSelectedPoster] = useState(null);
   
@@ -62,6 +58,10 @@ export default function PosterGallery({ posters = [] }) {
   const startXRef = useRef(0);
   const lastXRef = useRef(0);
   const lastTimeRef = useRef(0);
+
+
+  // Ensure enough items to form a ring
+  const displayItems = posters.length < 5 ? [...posters, ...posters, ...posters].slice(0, 8) : posters;
   const autoRotateSpeed = 0.05;
 
   const radius = Math.max(350, displayItems.length * 45); 
@@ -97,6 +97,8 @@ export default function PosterGallery({ posters = [] }) {
     animationFrameId = requestAnimationFrame(updateRotation);
     return () => cancelAnimationFrame(animationFrameId);
   }, [hoveredIndex]);
+
+  if (!posters || posters.length === 0) return null;
 
   // Pointer Handlers for Dragging
   const handlePointerDown = (e) => {
@@ -273,7 +275,7 @@ export default function PosterGallery({ posters = [] }) {
                       data-cursor
                       data-cursor-text="DRAG/CLICK"
                     >
-                      <img src={poster.imageUrl} alt={poster.title} className="carousel-item-img draggable-none" draggable={false} />
+                      <Image src={poster.imageUrl} alt={poster.title} fill sizes="(max-width: 768px) 100vw, 400px" className="carousel-item-img draggable-none" draggable={false} />
                       <div className="absolute inset-0 pointer-events-none rounded-[16px] border border-white/10 opacity-50 mix-blend-overlay"></div>
                       <div className="carousel-content">
                         <div className="text-[9px] uppercase tracking-widest text-white/50 mb-1">{poster.tag}</div>
@@ -301,10 +303,12 @@ export default function PosterGallery({ posters = [] }) {
               <X size={20} />
             </button>
             
-            <div className={`w-full ${selectedPoster.type === 'thumbnail' ? 'md:w-full' : 'md:w-1/2'} bg-black flex items-center justify-center p-6`}>
-              <img 
+            <div className={`w-full relative min-h-[300px] ${selectedPoster.type === 'thumbnail' ? 'md:w-full min-h-[50vh]' : 'md:w-1/2 min-h-[70vh]'} bg-black flex items-center justify-center p-6`}>
+              <Image 
                 src={selectedPoster.imageUrl} 
                 alt={selectedPoster.title}
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
                 className={`w-full object-contain ${selectedPoster.type === 'thumbnail' ? 'aspect-video' : 'aspect-square'} rounded-lg shadow-lg`}
               />
             </div>

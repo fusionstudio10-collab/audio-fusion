@@ -32,7 +32,8 @@ const CategoryInput = ({ initialValue, onCommit }) => {
   const [val, setVal] = useState(initialValue || "");
   
   useEffect(() => {
-    setVal(initialValue || "");
+    const frameId = requestAnimationFrame(() => setVal(initialValue || ""));
+    return () => cancelAnimationFrame(frameId);
   }, [initialValue]);
 
   return (
@@ -87,10 +88,10 @@ export default function AdminPanel() {
     fetchConfig();
 
     if (typeof window !== "undefined") {
-      // Check temporary session authorization
       const sessionAuth = sessionStorage.getItem("audio_fusion_auth");
       if (sessionAuth === "true") {
-        setIsAuthorized(true);
+        const frameId = requestAnimationFrame(() => setIsAuthorized(true));
+        return () => cancelAnimationFrame(frameId);
       }
     }
   }, []);

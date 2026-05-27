@@ -16,7 +16,7 @@ export default function TestimonialMarquee({ testimonials = [] }) {
           Client Feedback
         </span>
         <h2 className="font-[family-name:var(--font-playfair)] italic text-4xl sm:text-5xl font-black mt-2">
-          Artists We've Amplified
+          Artists We&apos;ve Amplified
         </h2>
       </div>
 
@@ -33,11 +33,15 @@ export default function TestimonialMarquee({ testimonials = [] }) {
             >
               <Quote className="w-8 h-8 text-[var(--gold)]/40 mb-4" />
               <p className="font-sans text-sm sm:text-base text-neutral-300 leading-relaxed mb-6 italic">
-                "{item.text}"
+                &quot;{item.text}&quot;
               </p>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center border border-neutral-700">
-                  <span className="font-bold text-[var(--gold)]">{item.client.charAt(0)}</span>
+                <div className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center border border-neutral-700 overflow-hidden">
+                  {item.imageUrl ? (
+                    <img src={item.imageUrl} alt={item.client} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="font-bold text-[var(--gold)]">{item.client ? item.client.charAt(0) : ''}</span>
+                  )}
                 </div>
                 <div>
                   <h4 className="font-bold text-white text-sm">{item.client}</h4>

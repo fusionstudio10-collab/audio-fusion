@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-
+import { Play, Pause, Volume2 } from "lucide-react";
 function TiltCard({ children }) {
   const ref = useRef(null);
 

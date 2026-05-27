@@ -81,9 +81,12 @@ export function ToastContainer() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    const frameId = requestAnimationFrame(() => setMounted(true));
     listeners.push(setItems);
-    return () => { listeners = listeners.filter((l) => l !== setItems); };
+    return () => { 
+      cancelAnimationFrame(frameId);
+      listeners = listeners.filter((l) => l !== setItems); 
+    };
   }, []);
 
   const remove = useCallback((id) => {
