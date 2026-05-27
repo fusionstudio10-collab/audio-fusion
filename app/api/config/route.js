@@ -19,11 +19,21 @@ export async function GET() {
     
     // Fallback: If DB has an older sectionsOrder without 'posters', inject it
     if (config.sectionsOrder && !config.sectionsOrder.includes("posters")) {
-      const servicesIndex = config.sectionsOrder.indexOf("services");
-      if (servicesIndex !== -1) {
-        config.sectionsOrder.splice(servicesIndex + 1, 0, "posters");
+      const postersIndex = config.sectionsOrder.indexOf("services"); // wait, Posters usually comes before Services
+      if (postersIndex !== -1) {
+        config.sectionsOrder.splice(postersIndex, 0, "posters");
       } else {
         config.sectionsOrder.push("posters");
+      }
+    }
+
+    // Fallback: If DB has an older sectionsOrder without 'testimonials', inject it
+    if (config.sectionsOrder && !config.sectionsOrder.includes("testimonials")) {
+      const servicesIndex = config.sectionsOrder.indexOf("services");
+      if (servicesIndex !== -1) {
+        config.sectionsOrder.splice(servicesIndex + 1, 0, "testimonials");
+      } else {
+        config.sectionsOrder.push("testimonials");
       }
     }
     
