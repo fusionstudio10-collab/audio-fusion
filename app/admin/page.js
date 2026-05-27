@@ -69,21 +69,24 @@ export default function AdminPanel() {
 
   // Load config & authorization state
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("audio_fusion_config");
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          // Merge defaults with stored values so new schema keys are always present
-          const merged = { ...defaultConfig, ...parsed };
-          setConfig(merged);
-        } catch (e) {
+    const fetchConfig = async () => {
+      try {
+        const res = await fetch("/api/config");
+        if (res.ok) {
+          const fetched = await res.json();
+          setConfig({ ...defaultConfig, ...fetched });
+        } else {
           setConfig(defaultConfig);
         }
-      } else {
+      } catch (err) {
+        console.error("Failed to load config from database:", err);
         setConfig(defaultConfig);
       }
+    };
 
+    fetchConfig();
+
+    if (typeof window !== "undefined") {
       // Check temporary session authorization
       const sessionAuth = sessionStorage.getItem("audio_fusion_auth");
       if (sessionAuth === "true") {
@@ -116,30 +119,48 @@ export default function AdminPanel() {
     sessionStorage.removeItem("audio_fusion_auth");
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!config) return;
     setIsSaving(true);
     try {
+      // Save locally as a fallback just in case
       localStorage.setItem("audio_fusion_config", JSON.stringify(config));
-      // Notify other open tabs (main site) to reload config
+      
+      // Save to Vercel KV Database
+      const res = await fetch("/api/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(config)
+      });
+      
+      if (!res.ok) throw new Error("Failed to save to database");
+
+      // Notify other open tabs (main site) to reload config if open locally
       window.dispatchEvent(new StorageEvent("storage", {
         key: "audio_fusion_config",
         newValue: JSON.stringify(config),
       }));
-      toast.success("Settings saved & published!");
+      toast.success("Settings saved globally to Database!");
     } catch (e) {
       console.error("Save failed:", e);
-      toast.error("Save failed. Storage might be full.");
+      toast.error("Save failed. Check console or Vercel KV setup.");
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleReset = () => {
-    if (!window.confirm("Reset everything to default values?")) return;
+  const handleReset = async () => {
+    if (!window.confirm("Reset everything to default values globally?")) return;
     try {
       setConfig(defaultConfig);
+      // Reset local
       localStorage.setItem("audio_fusion_config", JSON.stringify(defaultConfig));
+      // Reset KV
+      await fetch("/api/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(defaultConfig)
+      });
       toast.info("Config reset to defaults.");
     } catch (e) {
       console.error("Reset failed:", e);

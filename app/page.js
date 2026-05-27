@@ -77,26 +77,27 @@ export default function Home() {
   const [scrolledDown, setScrolledDown] = useState(false);
   const lastScroll = useRef(0);
 
-  // Load configuration from localStorage (with defaultConfig as fallback)
-
   useEffect(() => {
-    // Load fresh settings from localStorage
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("audio_fusion_config");
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          const merged = { ...defaultConfig, ...parsed };
+    // Load fresh settings from database
+    const fetchConfig = async () => {
+      try {
+        const res = await fetch("/api/config");
+        if (res.ok) {
+          const fetched = await res.json();
+          const merged = { ...defaultConfig, ...fetched };
           setConfig(merged);
           if (merged.audios) audioEngine.updateUrls(merged.audios);
-        } catch (e) {
-          setConfig(defaultConfig);
+        } else {
+          throw new Error("Failed response");
         }
-      } else {
+      } catch (err) {
+        console.error("Database fetch failed:", err);
         setConfig(defaultConfig);
         if (defaultConfig.audios) audioEngine.updateUrls(defaultConfig.audios);
       }
-    }
+    };
+    
+    fetchConfig();
 
     // Real-time sync if changed in another tab (Admin Panel)
     const handleStorageChange = (e) => {
