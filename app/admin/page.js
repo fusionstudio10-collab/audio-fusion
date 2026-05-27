@@ -760,11 +760,11 @@ export default function AdminPanel() {
   }
 
   return (
-    <div className="min-h-screen md:h-screen md:overflow-hidden bg-[#070708] text-[#f3f3f0] font-[family-name:var(--font-syne)] flex flex-col md:flex-row relative">
+    <div className="min-h-screen bg-[#070708] text-[#f3f3f0] font-[family-name:var(--font-syne)] flex flex-col md:flex-row relative pb-16 md:pb-0 md:h-screen md:overflow-hidden">
       <div className="film-grain" />
 
-      {/* Sidebar navigation */}
-      <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-neutral-900 bg-neutral-950/30 backdrop-blur-md flex flex-col z-20">
+      {/* Sidebar navigation – DESKTOP ONLY */}
+      <aside className="hidden md:flex w-64 border-r border-neutral-900 bg-neutral-950/30 backdrop-blur-md flex-col z-20 h-full">
         <div className="p-6 border-b border-neutral-900 flex justify-between items-center">
           <div>
             <h2 className="font-[family-name:var(--font-playfair)] italic text-xl font-bold tracking-tight text-[var(--text)]">CMS Panel</h2>
@@ -798,6 +798,17 @@ export default function AdminPanel() {
           <span className="text-[13px] font-mono text-[var(--muted)]">v1.2</span>
         </div>
       </aside>
+
+      {/* Mobile Top Bar */}
+      <div className="md:hidden flex items-center justify-between px-5 py-3 border-b border-neutral-900 bg-[#0a0a0c]/80 backdrop-blur-md sticky top-0 z-30">
+        <div>
+          <span className="font-[family-name:var(--font-playfair)] italic text-base font-bold text-white">CMS Panel</span>
+          <span className="ml-2 text-[10px] font-mono text-[var(--gold)] tracking-widest uppercase">{navItems.find(i => i.id === activeTab)?.label}</span>
+        </div>
+        <button onClick={handleLogout} className="text-[11px] border border-neutral-900 rounded px-2.5 py-1 text-[var(--muted)] hover:text-white transition-colors">
+          Exit
+        </button>
+      </div>
 
       {/* Main Content Area */}
       <main className="flex-1 h-full p-6 md:p-12 overflow-y-auto custom-scrollbar relative z-20">
@@ -1635,6 +1646,38 @@ export default function AdminPanel() {
           </div>
         </div>
       </main>
+
+      {/* Mobile Bottom Tab Bar */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0a0a0c]/95 backdrop-blur-md border-t border-neutral-900 flex items-center justify-around px-2 py-1 safe-area-pb">
+        {navItems.map((item) => (
+          <button
+            key={item.id}
+            onClick={() => setActiveTab(item.id)}
+            className={`flex flex-col items-center gap-0.5 px-2 py-2 rounded-lg transition-all min-w-0 flex-1 ${
+              activeTab === item.id
+                ? "text-[var(--gold)]"
+                : "text-neutral-600 hover:text-neutral-400"
+            }`}
+          >
+            <span className={`transition-transform ${activeTab === item.id ? "scale-110" : ""}`}>
+              {item.icon}
+            </span>
+            <span className="text-[9px] font-bold uppercase tracking-wide leading-tight text-center truncate w-full">
+              {item.label.split(" ")[0]}
+            </span>
+            {activeTab === item.id && (
+              <span className="w-1 h-1 rounded-full bg-[var(--gold)] mt-0.5" />
+            )}
+          </button>
+        ))}
+        <Link
+          href="/"
+          className="flex flex-col items-center gap-0.5 px-2 py-2 rounded-lg transition-all min-w-0 flex-1 text-neutral-600 hover:text-neutral-400"
+        >
+          <ArrowLeft size={16} />
+          <span className="text-[9px] font-bold uppercase tracking-wide">Back</span>
+        </Link>
+      </nav>
     </div>
   );
 }

@@ -245,6 +245,24 @@ export default function PosterGallery({ posters = [] }) {
           box-shadow: 0 0 50px rgba(255, 255, 255, 0.1);
           border-color: rgba(255, 255, 255, 0.3);
         }
+
+        /* Mobile responsive overrides */
+        @media (max-width: 640px) {
+          .carousel-scene {
+            height: 400px;
+          }
+          .type-poster {
+            width: 180px;
+            height: 180px;
+            margin-top: 30px;
+          }
+          .type-thumbnail {
+            width: 260px;
+            height: 146px;
+            margin-left: -40px;
+            margin-top: 57px;
+          }
+        }
       `}} />
 
       <div className="carousel-scene pointer-events-none">
