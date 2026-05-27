@@ -27,6 +27,11 @@ export async function GET() {
       }
     }
     
+    // Fallback: If DB is missing testimonials array, provide the default ones
+    if (!config.testimonials) {
+      config.testimonials = defaultConfig.testimonials;
+    }
+    
     return NextResponse.json(config);
   } catch (error) {
     console.error("Vercel Upstash KV GET Error:", error);
