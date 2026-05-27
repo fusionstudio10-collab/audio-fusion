@@ -19,10 +19,36 @@ import {
   Lock,
   Mail,
   MapPin,
-  Compass
+  Compass,
+  Video,
+  Tag,
+  GripVertical,
+  Image as ImageIcon
 } from "lucide-react";
 import { defaultConfig } from "../lib/defaultConfig";
 import { toast } from "../../components/Toast";
+
+const CategoryInput = ({ initialValue, onCommit }) => {
+  const [val, setVal] = useState(initialValue || "");
+  
+  useEffect(() => {
+    setVal(initialValue || "");
+  }, [initialValue]);
+
+  return (
+    <input 
+      type="text" 
+      value={val} 
+      onChange={(e) => setVal(e.target.value)} 
+      onBlur={(e) => {
+        if (val !== initialValue) {
+          onCommit(val);
+        }
+      }}
+      className="w-full bg-neutral-900/50 border border-neutral-800 rounded p-2 text-xs text-[var(--text)]" 
+    />
+  );
+};
 
 export default function AdminPanel() {
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -34,6 +60,12 @@ export default function AdminPanel() {
   const [isSaving, setIsSaving] = useState(false);
   const [config, setConfig] = useState(null);
   const [uploadingField, setUploadingField] = useState(null);
+  const [expandedCategory, setExpandedCategory] = useState(null);
+  const [draggedSectionIndex, setDraggedSectionIndex] = useState(null);
+  const [draggedServiceIndex, setDraggedServiceIndex] = useState(null);
+  const [draggedFounderIndex, setDraggedFounderIndex] = useState(null);
+  const [draggedYoutubeIndex, setDraggedYoutubeIndex] = useState(null);
+  const [draggedCategory, setDraggedCategory] = useState(null);
 
   // Load config & authorization state
   useEffect(() => {
@@ -171,6 +203,24 @@ export default function AdminPanel() {
     }
   };
 
+  const handleDeleteMedia = async (url, clearCallback) => {
+    if (url && url.includes("res.cloudinary.com")) {
+      try {
+        const res = await fetch("/api/upload", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+        });
+        if (!res.ok) throw new Error("Delete failed on server");
+        toast.success("Deleted from Cloudinary storage!");
+      } catch (err) {
+        toast.error(`Cloudinary delete failed: ${err.message}`);
+      }
+    }
+    // Always clear it from the UI/config anyway
+    clearCallback();
+  };
+
   const handleAudioChange = (e) => {
     setConfig({
       ...config,
@@ -249,16 +299,100 @@ export default function AdminPanel() {
     setConfig({ ...config, services: updatedServices });
   };
 
-  const addService = () => {
+  const handleCategoryRename = (index, newCat) => {
+    const oldCat = config.services[index].category || "Uncategorized";
+    if (oldCat !== newCat) {
+      handleServiceChange(index, "category", newCat);
+      if (expandedCategory === oldCat) {
+        setExpandedCategory(newCat || "Uncategorized");
+      }
+    }
+  };
+
+  const handleSectionDrop = (e, targetIdx) => {
+    e.preventDefault();
+    if (draggedSectionIndex === null || draggedSectionIndex === targetIdx) return;
+    const newOrder = [...config.sectionsOrder];
+    const item = newOrder.splice(draggedSectionIndex, 1)[0];
+    newOrder.splice(targetIdx, 0, item);
+    setConfig({ ...config, sectionsOrder: newOrder });
+    setDraggedSectionIndex(null);
+  };
+
+  const handleServiceDrop = (e, targetOriginalIdx) => {
+    e.preventDefault();
+    e.stopPropagation(); // prevent category drop
+    if (draggedServiceIndex === null || draggedServiceIndex === targetOriginalIdx) return;
+    const newServices = [...config.services];
+    const draggedItem = newServices[draggedServiceIndex];
+    newServices.splice(draggedServiceIndex, 1);
+    const currentTargetIndex = newServices.findIndex(s => s.id === config.services[targetOriginalIdx].id);
+    newServices.splice(currentTargetIndex >= 0 ? currentTargetIndex : targetOriginalIdx, 0, draggedItem);
+    setConfig({ ...config, services: newServices });
+    setDraggedServiceIndex(null);
+  };
+
+  const handleCategoryDrop = (e, targetCategory) => {
+    e.preventDefault();
+    if (draggedCategory === null || draggedCategory === targetCategory) return;
+
+    const categories = [];
+    const categoryMap = {};
+    config.services.forEach(svc => {
+      const cat = svc.category || "Uncategorized";
+      if (!categoryMap[cat]) {
+        categoryMap[cat] = [];
+        categories.push(cat);
+      }
+      categoryMap[cat].push(svc);
+    });
+
+    const draggedIdx = categories.indexOf(draggedCategory);
+    const targetIdx = categories.indexOf(targetCategory);
+    if (draggedIdx === -1 || targetIdx === -1) return;
+
+    const catToMove = categories.splice(draggedIdx, 1)[0];
+    categories.splice(targetIdx, 0, catToMove);
+
+    const newServices = [];
+    categories.forEach(cat => {
+      newServices.push(...categoryMap[cat]);
+    });
+
+    setConfig({ ...config, services: newServices });
+    setDraggedCategory(null);
+  };
+
+  const handleFounderDrop = (e, targetIdx) => {
+    e.preventDefault();
+    if (draggedFounderIndex === null || draggedFounderIndex === targetIdx) return;
+    const newList = [...config.founders];
+    const item = newList.splice(draggedFounderIndex, 1)[0];
+    newList.splice(targetIdx, 0, item);
+    setConfig({ ...config, founders: newList });
+    setDraggedFounderIndex(null);
+  };
+
+  const handleYoutubeDrop = (e, targetIdx) => {
+    e.preventDefault();
+    if (draggedYoutubeIndex === null || draggedYoutubeIndex === targetIdx) return;
+    const newList = [...config.youtubeWorks];
+    const item = newList.splice(draggedYoutubeIndex, 1)[0];
+    newList.splice(targetIdx, 0, item);
+    setConfig({ ...config, youtubeWorks: newList });
+    setDraggedYoutubeIndex(null);
+  };
+
+  const addService = (targetCategory) => {
     const newSvc = {
       id: `svc-${Date.now()}`,
-      category: "Mixing / Mastering",
-      name: "Standard Mix Package",
+      category: typeof targetCategory === 'string' ? targetCategory : "Mixing / Mastering",
+      name: "New Service Package",
       price: 2000,
       originalPrice: 2500,
       unit: "Per Song",
       description: "Complete sonic balancing and loudness optimization.",
-      badge: "Deal"
+      badge: ""
     };
     setConfig({ ...config, services: [...config.services, newSvc] });
   };
@@ -266,6 +400,100 @@ export default function AdminPanel() {
   const removeService = (index) => {
     const updated = config.services.filter((_, idx) => idx !== index);
     setConfig({ ...config, services: updated });
+  };
+
+  // --- YOUTUBE HANDLERS ---
+  const handleYoutubeChange = (index, field, value) => {
+    const updated = [...(config.youtubeWorks || [])];
+    updated[index] = { ...updated[index], [field]: value };
+    setConfig({ ...config, youtubeWorks: updated });
+  };
+
+  const addYoutubeTrack = () => {
+    const newVid = {
+      id: `yt-${Date.now()}`,
+      title: "New YouTube Video",
+      videoId: "",
+      thumbnail: "",
+      tags: ""
+    };
+    setConfig({ ...config, youtubeWorks: [...(config.youtubeWorks || []), newVid] });
+  };
+
+  const removeYoutubeTrack = (index) => {
+    const updated = (config.youtubeWorks || []).filter((_, idx) => idx !== index);
+    setConfig({ ...config, youtubeWorks: updated });
+  };
+
+  const [fetchingYoutube, setFetchingYoutube] = useState(null);
+
+  const handleFetchYoutubeInfo = async (index, videoId) => {
+    if (!videoId) return toast.error("Please enter a Video ID or URL first");
+    setFetchingYoutube(index);
+    try {
+      const res = await fetch(`/api/youtube?id=${encodeURIComponent(videoId)}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to fetch");
+      
+      const updated = [...(config.youtubeWorks || [])];
+      updated[index] = { 
+        ...updated[index], 
+        title: data.title, 
+        thumbnail: data.thumbnail,
+        videoId: data.videoId // Automatically replaces URL with clean ID
+      };
+      setConfig({ ...config, youtubeWorks: updated });
+      toast.success("Successfully fetched video info!");
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setFetchingYoutube(null);
+    }
+  };
+
+  const handlePromoChange = (field, value) => {
+    const parsedValue = (field === "value" && value !== "") ? parseInt(value) || 0 : value;
+    const updated = { ...(config.globalDiscount || {}), [field]: field === "active" ? value : parsedValue };
+    setConfig({ ...config, globalDiscount: updated });
+  };
+
+  // --- BACKGROUNDS HANDLERS ---
+  const handleBackgroundChange = (sectionId, field, value) => {
+    const updatedBg = { ...(config.sectionBackgrounds || {}) };
+    if (!updatedBg[sectionId]) updatedBg[sectionId] = { type: "color", url: "", overlayOpacity: 0.5 };
+    
+    // Parse opacity as number
+    const finalValue = field === "overlayOpacity" ? parseFloat(value) || 0 : value;
+    updatedBg[sectionId] = { ...updatedBg[sectionId], [field]: finalValue };
+    
+    setConfig({ ...config, sectionBackgrounds: updatedBg });
+  };
+
+  const handleBackgroundUpload = async (e, sectionId) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingField(`bg-${sectionId}`);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", `audio-fusion/backgrounds`);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error("Upload failed");
+      const { url } = await res.json();
+      
+      handleBackgroundChange(sectionId, "url", url);
+      toast.success("Background uploaded! Click Publish Settings to save.");
+    } catch (err) {
+      toast.error(`Upload failed: ${err.message}`);
+    } finally {
+      setUploadingField(null);
+    }
   };
 
   // --- DYNAMIC CUSTOM SECTIONS HANDLERS ---
@@ -348,10 +576,11 @@ export default function AdminPanel() {
   const navItems = [
     { id: "global", icon: <Settings size={16} />, label: "Global Settings" },
     { id: "layout", icon: <Layout size={16} />, label: "Page Layout Sequences" },
-    { id: "custom-sections", icon: <Compass size={16} />, label: "Custom Sections" },
+    { id: "backgrounds", icon: <ImageIcon size={16} />, label: "Section Backgrounds & FX" },
     { id: "founders", icon: <Users size={16} />, label: "Founders Profiles" },
-    { id: "showcase", icon: <Music size={16} />, label: "Portfolio Tracks" },
+    { id: "youtube-works", icon: <Video size={16} />, label: "YouTube Works" },
     { id: "services", icon: <FileText size={16} />, label: "Services Pricing" },
+    { id: "promotions", icon: <Tag size={16} />, label: "Promotions & Offers" },
   ];
 
   if (!config) return <div className="min-h-screen bg-[#070708] flex items-center justify-center text-sm font-mono text-[var(--gold)]">INITIALIZING ENGINE CONFIG...</div>;
@@ -375,7 +604,7 @@ export default function AdminPanel() {
 
           <form onSubmit={handleLoginSubmit} className="space-y-4 text-left">
             <div>
-              <label className="block text-[8px] font-mono text-[var(--muted)] mb-2 uppercase tracking-wider">Email Address</label>
+              <label className="block text-[11px] font-mono text-[var(--muted)] mb-2 uppercase tracking-wider">Email Address</label>
               <input 
                 type="email" 
                 required
@@ -387,7 +616,7 @@ export default function AdminPanel() {
             </div>
 
             <div>
-              <label className="block text-[8px] font-mono text-[var(--muted)] mb-2 uppercase tracking-wider">Passcode</label>
+              <label className="block text-[11px] font-mono text-[var(--muted)] mb-2 uppercase tracking-wider">Passcode</label>
               <input 
                 type="password" 
                 required
@@ -421,7 +650,7 @@ export default function AdminPanel() {
   }
 
   return (
-    <div className="min-h-screen bg-[#070708] text-[#f3f3f0] font-[family-name:var(--font-syne)] flex flex-col md:flex-row relative">
+    <div className="min-h-screen md:h-screen md:overflow-hidden bg-[#070708] text-[#f3f3f0] font-[family-name:var(--font-syne)] flex flex-col md:flex-row relative">
       <div className="film-grain" />
 
       {/* Sidebar navigation */}
@@ -429,14 +658,14 @@ export default function AdminPanel() {
         <div className="p-6 border-b border-neutral-900 flex justify-between items-center">
           <div>
             <h2 className="font-[family-name:var(--font-playfair)] italic text-xl font-bold tracking-tight text-[var(--text)]">CMS Panel</h2>
-            <p className="text-[8px] font-mono text-[var(--gold)] mt-1 tracking-widest uppercase">AUDIO FUSION ACTIVE</p>
+            <p className="text-[11px] font-mono text-[var(--gold)] mt-1 tracking-widest uppercase">AUDIO FUSION ACTIVE</p>
           </div>
           <button onClick={handleLogout} className="text-[10px] border border-neutral-900 rounded px-2.5 py-1 text-[var(--muted)] hover:text-white transition-colors">
             Exit
           </button>
         </div>
         
-        <nav className="p-4 space-y-1.5 flex-1">
+        <nav className="p-4 space-y-1.5 flex-1 overflow-y-auto custom-scrollbar">
           {navItems.map((item) => (
             <button
               key={item.id}
@@ -456,13 +685,14 @@ export default function AdminPanel() {
           <Link href="/" className="flex items-center gap-2 text-[10px] font-bold tracking-widest text-[var(--muted)] hover:text-white uppercase transition-colors">
             <ArrowLeft size={14} /> Back to Studio
           </Link>
-          <span className="text-[8px] font-mono text-[var(--muted)]">v1.2</span>
+          <span className="text-[11px] font-mono text-[var(--muted)]">v1.2</span>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 p-6 md:p-12 overflow-y-auto max-w-5xl z-20">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-10">
+      <main className="flex-1 h-full p-6 md:p-12 overflow-y-auto custom-scrollbar relative z-20">
+        <div className="max-w-5xl mx-auto pb-20">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-10">
           <div>
             <h1 className="font-[family-name:var(--font-playfair)] italic text-4xl font-black text-[var(--text)]">
               {navItems.find(i => i.id === activeTab)?.label}
@@ -539,11 +769,11 @@ export default function AdminPanel() {
                     <Lock size={14} /> Admin Access Gate Login
                   </div>
                   <div>
-                    <label className="block text-[8px] font-mono text-[var(--muted)] mb-1.5 uppercase">Admin Email</label>
+                    <label className="block text-[11px] font-mono text-[var(--muted)] mb-1.5 uppercase">Admin Email</label>
                     <input type="email" name="adminEmail" value={config.adminEmail} onChange={handleChange} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] focus:outline-none" />
                   </div>
                   <div>
-                    <label className="block text-[8px] font-mono text-[var(--muted)] mb-1.5 uppercase">Admin Passcode</label>
+                    <label className="block text-[11px] font-mono text-[var(--muted)] mb-1.5 uppercase">Admin Passcode</label>
                     <input type="password" name="adminPassword" value={config.adminPassword} onChange={handleChange} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] focus:outline-none font-mono" />
                   </div>
                 </div>
@@ -569,15 +799,15 @@ export default function AdminPanel() {
                 </h3>
                 <div className="grid grid-cols-1 gap-4">
                   <div>
-                    <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase tracking-widest">Ambient Tape Hiss Loop URL</label>
+                    <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase tracking-widest">Ambient Tape Hiss Loop URL</label>
                     <input type="text" name="hissUrl" value={config.audios.hissUrl} onChange={handleAudioChange} className="w-full bg-[#070708] border border-neutral-900 rounded-lg p-2.5 text-xs text-[var(--text)] focus:outline-none focus:border-neutral-500 font-mono" />
                   </div>
                   <div>
-                    <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase tracking-widest">Button Interaction Click Sound URL</label>
+                    <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase tracking-widest">Button Interaction Click Sound URL</label>
                     <input type="text" name="clickUrl" value={config.audios.clickUrl} onChange={handleAudioChange} className="w-full bg-[#070708] border border-neutral-900 rounded-lg p-2.5 text-xs text-[var(--text)] focus:outline-none focus:border-neutral-500 font-mono" />
                   </div>
                   <div>
-                    <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase tracking-widest">Intro VHS TV Glitch Sound URL</label>
+                    <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase tracking-widest">Intro VHS TV Glitch Sound URL</label>
                     <input type="text" name="glitchUrl" value={config.audios.glitchUrl || ""} onChange={handleAudioChange} className="w-full bg-[#070708] border border-neutral-900 rounded-lg p-2.5 text-xs text-[var(--text)] focus:outline-none focus:border-neutral-500 font-mono" />
                   </div>
                 </div>
@@ -594,35 +824,26 @@ export default function AdminPanel() {
                   const isCustom = section.startsWith("custom-");
                   const customSecTitle = isCustom ? config.customSections.find(s => s.id === section)?.title : "";
                   return (
-                    <div 
+                    <div
                       key={section}
-                      className="flex justify-between items-center p-4 bg-neutral-900/60 border border-neutral-800/80 rounded-xl"
+                      draggable
+                      onDragStart={(e) => setDraggedSectionIndex(idx)}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => handleSectionDrop(e, idx)}
+                      className={`flex justify-between items-center p-4 bg-neutral-900/60 border rounded-xl transition-colors cursor-move ${draggedSectionIndex === idx ? 'opacity-50 border-[var(--gold)]' : 'border-neutral-800/80 hover:border-neutral-700'}`}
                     >
                       <div className="flex items-center gap-3">
+                        <GripVertical size={16} className="text-neutral-600" />
                         <span className="font-mono text-[9px] text-[var(--muted)]">0{idx+1}</span>
                         <div className="flex flex-col">
                           <span className="font-bold text-xs uppercase tracking-widest text-[var(--text)]">
                             {isCustom ? `Custom Block: ${customSecTitle || "Section"}` : `${section} Section`}
                           </span>
-                          {isCustom && <span className="text-[8px] font-mono text-[var(--gold)] mt-0.5 uppercase">DYNAMICALLY CREATED</span>}
+                          {isCustom && <span className="text-[11px] font-mono text-[var(--gold)] mt-0.5 uppercase">DYNAMICALLY CREATED</span>}
                         </div>
                       </div>
 
                       <div className="flex gap-2">
-                        <button 
-                          onClick={() => moveSection(idx, -1)}
-                          disabled={idx === 0}
-                          className="p-2 border border-neutral-800 rounded bg-[#070708] text-[var(--muted)] hover:text-white disabled:opacity-20 hover:border-neutral-700 transition-colors"
-                        >
-                          <ArrowUp size={14} />
-                        </button>
-                        <button 
-                          onClick={() => moveSection(idx, 1)}
-                          disabled={idx === config.sectionsOrder.length - 1}
-                          className="p-2 border border-neutral-800 rounded bg-[#070708] text-[var(--muted)] hover:text-white disabled:opacity-20 hover:border-neutral-700 transition-colors"
-                        >
-                          <ArrowDown size={14} />
-                        </button>
                         <button
                           onClick={() => toggleSectionActive(section)}
                           className="px-2.5 py-1 border border-neutral-800 rounded bg-[#070708] text-[9px] uppercase tracking-wider font-bold text-red-400 hover:text-red-500"
@@ -667,15 +888,15 @@ export default function AdminPanel() {
 
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                          <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase">Block Title</label>
+                          <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Block Title</label>
                           <input type="text" value={sec.title} onChange={(e) => handleCustomSectionChange(sec.id, "title", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] font-bold" />
                         </div>
                         <div>
-                          <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase">Subtitle Tag</label>
+                          <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Subtitle Tag</label>
                           <input type="text" value={sec.subtitle} onChange={(e) => handleCustomSectionChange(sec.id, "subtitle", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] uppercase tracking-wider" />
                         </div>
                         <div>
-                          <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase">Layout Format</label>
+                          <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Layout Format</label>
                           <select 
                             value={sec.layout} 
                             onChange={(e) => handleCustomSectionChange(sec.id, "layout", e.target.value)} 
@@ -687,7 +908,7 @@ export default function AdminPanel() {
                           </select>
                         </div>
                         <div className="col-span-1 md:col-span-3">
-                          <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase">Block Content Body Paragraph</label>
+                          <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Block Content Body Paragraph</label>
                           <textarea rows="3" value={sec.content} onChange={(e) => handleCustomSectionChange(sec.id, "content", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2.5 text-xs text-[var(--text)]" />
                         </div>
                       </div>
@@ -737,32 +958,55 @@ export default function AdminPanel() {
           {/* TAB 4: FOUNDERS PROFILES */}
           {activeTab === "founders" && (
             <div className="space-y-10">
-              {config.founders.map((f) => (
-                <div key={f.id} className="p-6 border border-neutral-900 rounded-xl space-y-4">
-                  <h3 className="font-[family-name:var(--font-playfair)] italic text-lg font-bold border-b border-neutral-900 pb-2">
+              <div className="p-3 bg-[var(--gold)]/10 border border-[var(--gold)]/20 rounded-lg">
+                <p className="text-[10px] text-[var(--gold)] uppercase font-mono tracking-wider font-bold">Recommended Portrait Ratio</p>
+                <p className="text-xs text-white/80 mt-1 leading-relaxed">
+                  Use a 3:4 Portrait ratio (e.g. 1080x1440) for best results in the Founder Popup. The image will automatically fill the space.
+                </p>
+              </div>
+              {config.founders.map((f, idx) => (
+                <div 
+                  key={f.id} 
+                  draggable
+                  onDragStart={(e) => setDraggedFounderIndex(idx)}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => handleFounderDrop(e, idx)}
+                  className={`p-6 border rounded-xl space-y-4 relative cursor-move transition-colors ${draggedFounderIndex === idx ? 'opacity-50 border-[var(--gold)]' : 'border-neutral-900 hover:border-neutral-800'}`}
+                >
+                  <div className="absolute top-4 right-4 text-neutral-600">
+                    <GripVertical size={16} />
+                  </div>
+                  <h3 className="font-[family-name:var(--font-playfair)] italic text-lg font-bold border-b border-neutral-900 pb-2 mr-8">
                     Profile: {f.name}
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                     <div>
-                      <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase">Full Name</label>
+                      <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Full Name</label>
                       <input type="text" value={f.name} onChange={(e) => handleFounderChange(f.id, "name", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] font-bold" />
                     </div>
                     <div>
-                      <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase">Role/Tagline Title</label>
+                      <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Role/Tagline Title</label>
                       <input type="text" value={f.role} onChange={(e) => handleFounderChange(f.id, "role", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)]" />
                     </div>
                     <div className="col-span-1 md:col-span-2">
-                      <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase">Portrait Image</label>
+                      <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Portrait Image</label>
                       <div className="flex gap-2">
                         <input type="text" value={f.photo} onChange={(e) => handleFounderChange(f.id, "photo", e.target.value)} className="flex-1 bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] font-mono" />
                         <label className="px-3 py-2 bg-neutral-900 border border-neutral-800 hover:border-neutral-700 rounded font-bold text-[9px] uppercase tracking-wider text-center cursor-pointer shrink-0 flex items-center justify-center">
                           {uploadingField === `founder-${f.id}` ? 'Uploading...' : 'Upload'}
                           <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'founder', f.id)} className="hidden" disabled={uploadingField === `founder-${f.id}`} />
                         </label>
+                        <button 
+                          onClick={() => handleDeleteMedia(f.photo, () => handleFounderChange(f.id, "photo", ""))} 
+                          className="px-3 py-2 bg-red-950/30 border border-red-900/50 hover:bg-red-900/50 text-red-500 rounded font-bold text-[9px] uppercase tracking-wider transition-colors shrink-0 flex items-center justify-center"
+                          title="Delete portrait"
+                        >
+                          Delete
+                        </button>
                       </div>
                     </div>
                     <div className="col-span-1 md:col-span-2">
-                      <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase">Personal Statement Quote</label>
+                      <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Personal Statement Quote</label>
                       <textarea rows="2" value={f.bio} onChange={(e) => handleFounderChange(f.id, "bio", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2.5 text-xs text-[var(--text)]" />
                     </div>
                   </div>
@@ -795,29 +1039,36 @@ export default function AdminPanel() {
                     </button>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase">Track Title</label>
+                        <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Track Title</label>
                         <input type="text" value={track.title} onChange={(e) => handlePortfolioChange(idx, "title", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] font-bold" />
                       </div>
                       <div>
-                        <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase">Artist</label>
+                        <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Artist</label>
                         <input type="text" value={track.artist} onChange={(e) => handlePortfolioChange(idx, "artist", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)]" />
                       </div>
                       <div>
-                        <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase">Genre Label</label>
+                        <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Genre Label</label>
                         <input type="text" value={track.genre} onChange={(e) => handlePortfolioChange(idx, "genre", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)]" />
                       </div>
                       <div>
-                        <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase">Audio File URL / Stream Link</label>
+                        <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Audio File URL / Stream Link</label>
                         <input type="text" value={track.audioUrl} onChange={(e) => handlePortfolioChange(idx, "audioUrl", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] font-mono" />
                       </div>
                       <div className="col-span-1 md:col-span-2">
-                        <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase">Cover Image</label>
+                        <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Cover Image</label>
                         <div className="flex gap-2">
                           <input type="text" value={track.coverUrl} onChange={(e) => handlePortfolioChange(idx, "coverUrl", e.target.value)} className="flex-1 bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] font-mono" />
                           <label className="px-3 py-2 bg-neutral-900 border border-neutral-800 hover:border-neutral-700 rounded font-bold text-[9px] uppercase tracking-wider text-center cursor-pointer shrink-0 flex items-center justify-center">
                             {uploadingField === `showcase-${idx}` ? 'Uploading...' : 'Upload'}
                             <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'showcase', idx)} className="hidden" disabled={uploadingField === `showcase-${idx}`} />
                           </label>
+                          <button 
+                            onClick={() => handleDeleteMedia(track.coverUrl, () => handlePortfolioChange(idx, "coverUrl", ""))} 
+                            className="px-3 py-2 bg-red-950/30 border border-red-900/50 hover:bg-red-900/50 text-red-500 rounded font-bold text-[9px] uppercase tracking-wider transition-colors shrink-0 flex items-center justify-center"
+                            title="Delete cover"
+                          >
+                            Delete
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -840,43 +1091,160 @@ export default function AdminPanel() {
                 </button>
               </div>
 
+              <div className="space-y-4">
+                {Object.entries((config.services || []).reduce((acc, svc, idx) => {
+                  const cat = svc.category || "Uncategorized";
+                  if (!acc[cat]) acc[cat] = [];
+                  acc[cat].push({ ...svc, originalIndex: idx });
+                  return acc;
+                }, {})).map(([category, svcs]) => (
+                  <div 
+                    key={category} 
+                    draggable
+                    onDragStart={(e) => setDraggedCategory(category)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => handleCategoryDrop(e, category)}
+                    className={`border rounded-xl overflow-hidden cursor-move transition-colors ${draggedCategory === category ? 'opacity-50 border-[var(--gold)]' : 'border-neutral-900'}`}
+                  >
+                    <button
+                      onClick={() => setExpandedCategory(expandedCategory === category ? null : category)}
+                      className="w-full flex items-center justify-between p-4 bg-neutral-950/60 hover:bg-neutral-900 transition-colors text-left"
+                    >
+                      <div className="flex items-center gap-3">
+                        <GripVertical size={16} className="text-neutral-600" />
+                        <span className="font-[family-name:var(--font-syne)] font-bold text-[var(--gold)] uppercase tracking-widest text-xs">{category} ({svcs.length})</span>
+                      </div>
+                      <span className="text-[var(--muted)]">{expandedCategory === category ? <ArrowUp size={14} /> : <ArrowDown size={14} />}</span>
+                    </button>
+                    {expandedCategory === category && (
+                      <div className="p-4 space-y-6 bg-neutral-950/20 border-t border-neutral-900">
+                        {svcs.map((svc) => (
+                          <div 
+                            key={svc.id} 
+                            draggable
+                            onDragStart={(e) => {
+                              e.stopPropagation();
+                              setDraggedServiceIndex(svc.originalIndex);
+                            }}
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={(e) => handleServiceDrop(e, svc.originalIndex)}
+                            className={`p-6 border rounded-xl space-y-4 relative bg-[#070708] transition-all cursor-move ${draggedServiceIndex === svc.originalIndex ? 'opacity-50 border-[var(--gold)]' : 'border-neutral-800 hover:border-neutral-700'}`}
+                          >
+                            <button 
+                              onClick={() => removeService(svc.originalIndex)}
+                              className="absolute top-4 right-4 text-[var(--muted)] hover:text-red-500 p-1.5 transition-colors"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                            <div className="absolute top-4 left-4 text-neutral-600">
+                              <GripVertical size={16} />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                              <div>
+                                <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Service Title</label>
+                                <input type="text" value={svc.name} onChange={(e) => handleServiceChange(svc.originalIndex, "name", e.target.value)} className="w-full bg-neutral-900/50 border border-neutral-800 rounded p-2 text-xs text-[var(--text)] font-bold" />
+                              </div>
+                              <div>
+                                <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Category Group</label>
+                                <CategoryInput 
+                                  initialValue={svc.category} 
+                                  onCommit={(newVal) => handleCategoryRename(svc.originalIndex, newVal)} 
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Deal Price (₹)</label>
+                                <input type="number" value={svc.price} onChange={(e) => handleServiceChange(svc.originalIndex, "price", e.target.value)} className="w-full bg-neutral-900/50 border border-neutral-800 rounded p-2 text-xs text-[var(--text)] font-mono font-bold text-[var(--neon-green)]" />
+                              </div>
+                              <div>
+                                <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Original Price (₹) - Strikethrough</label>
+                                <input type="number" value={svc.originalPrice || ""} onChange={(e) => handleServiceChange(svc.originalIndex, "originalPrice", e.target.value)} className="w-full bg-neutral-900/50 border border-neutral-800 rounded p-2 text-xs text-[var(--text)] font-mono text-neutral-500" />
+                              </div>
+                              <div>
+                                <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Billing Unit (e.g. Per Hour, Per Song)</label>
+                                <input type="text" value={svc.unit || ""} onChange={(e) => handleServiceChange(svc.originalIndex, "unit", e.target.value)} className="w-full bg-neutral-900/50 border border-neutral-800 rounded p-2 text-xs text-[var(--text)]" />
+                              </div>
+                              <div>
+                                <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Promotion Badge (e.g. Best Deal)</label>
+                                <input type="text" value={svc.badge || ""} onChange={(e) => handleServiceChange(svc.originalIndex, "badge", e.target.value)} className="w-full bg-neutral-900/50 border border-neutral-800 rounded p-2 text-xs text-[var(--text)] text-[var(--gold)]" />
+                              </div>
+                              <div className="col-span-1 md:col-span-2">
+                                <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Service Summary Details</label>
+                                <textarea rows="2" value={svc.description} onChange={(e) => handleServiceChange(svc.originalIndex, "description", e.target.value)} className="w-full bg-neutral-900/50 border border-neutral-800 rounded p-2 text-xs text-[var(--text)]" />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        <button
+                          onClick={() => addService(category)}
+                          className="w-full py-3 border border-dashed border-[var(--gold)]/30 rounded-xl text-[var(--gold)] font-bold text-xs uppercase tracking-widest hover:bg-[var(--gold)]/10 transition-colors flex items-center justify-center gap-2"
+                        >
+                          <Plus size={14} /> Add Service Here
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 7: YOUTUBE WORKS */}
+          {activeTab === "youtube-works" && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center border-b border-neutral-900 pb-4">
+                <span className="text-[10px] uppercase font-bold text-[var(--muted)]">Manage YouTube Works ({(config.youtubeWorks || []).length})</span>
+                <button 
+                  onClick={addYoutubeTrack}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-neutral-900 border border-neutral-800 hover:border-neutral-600 rounded text-[9px] font-bold uppercase tracking-widest transition-colors"
+                >
+                  <Plus size={12} /> Add Video
+                </button>
+              </div>
+
               <div className="space-y-6">
-                {config.services.map((svc, idx) => (
-                  <div key={svc.id} className="p-6 border border-neutral-900 rounded-xl space-y-4 relative bg-neutral-950/20">
+                {(config.youtubeWorks || []).map((vid, idx) => (
+                  <div 
+                    key={vid.id} 
+                    draggable
+                    onDragStart={(e) => setDraggedYoutubeIndex(idx)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => handleYoutubeDrop(e, idx)}
+                    className={`p-6 border rounded-xl space-y-4 relative cursor-move transition-colors ${draggedYoutubeIndex === idx ? 'opacity-50 border-[var(--gold)]' : 'border-neutral-900 bg-neutral-950/20 hover:border-neutral-800'}`}
+                  >
                     <button 
-                      onClick={() => removeService(idx)}
+                      onClick={() => removeYoutubeTrack(idx)}
                       className="absolute top-4 right-4 text-[var(--muted)] hover:text-red-500 p-1.5 transition-colors"
                     >
                       <Trash2 size={16} />
                     </button>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="absolute top-4 left-4 text-neutral-600">
+                      <GripVertical size={16} />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                       <div>
-                        <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase">Service Title</label>
-                        <input type="text" value={svc.name} onChange={(e) => handleServiceChange(idx, "name", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] font-bold" />
+                        <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">YouTube URL or ID</label>
+                        <div className="flex gap-2">
+                          <input type="text" value={vid.videoId} onChange={(e) => handleYoutubeChange(idx, "videoId", e.target.value)} className="flex-1 w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] font-mono text-[var(--neon-blue)]" placeholder="https://youtu.be/... or ID" />
+                          <button 
+                            onClick={() => handleFetchYoutubeInfo(idx, vid.videoId)}
+                            disabled={fetchingYoutube === idx}
+                            className="px-3 py-2 bg-neutral-900 border border-neutral-800 hover:border-[var(--gold)] text-[var(--gold)] rounded font-bold text-[9px] uppercase tracking-wider transition-colors shrink-0 disabled:opacity-50"
+                          >
+                            {fetchingYoutube === idx ? "Fetching..." : "Auto Fetch"}
+                          </button>
+                        </div>
                       </div>
                       <div>
-                        <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase">Category Group</label>
-                        <input type="text" value={svc.category} onChange={(e) => handleServiceChange(idx, "category", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)]" />
+                        <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Video Title</label>
+                        <input type="text" value={vid.title} onChange={(e) => handleYoutubeChange(idx, "title", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] font-bold" />
                       </div>
                       <div>
-                        <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase">Deal Price (₹)</label>
-                        <input type="number" value={svc.price} onChange={(e) => handleServiceChange(idx, "price", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] font-mono font-bold text-[var(--neon-green)]" />
+                        <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Tags / Roles (e.g. Mix, Master, Beat Production)</label>
+                        <input type="text" value={vid.tags || ""} onChange={(e) => handleYoutubeChange(idx, "tags", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] text-[var(--gold)] font-mono" placeholder="Comma separated roles..." />
                       </div>
                       <div>
-                        <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase">Original Price (₹) - Strikethrough</label>
-                        <input type="number" value={svc.originalPrice || ""} onChange={(e) => handleServiceChange(idx, "originalPrice", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] font-mono text-neutral-500" />
-                      </div>
-                      <div>
-                        <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase">Billing Unit (e.g. Per Hour, Per Song)</label>
-                        <input type="text" value={svc.unit || ""} onChange={(e) => handleServiceChange(idx, "unit", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)]" />
-                      </div>
-                      <div>
-                        <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase">Promotion Badge (e.g. Best Deal)</label>
-                        <input type="text" value={svc.badge || ""} onChange={(e) => handleServiceChange(idx, "badge", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] text-[var(--gold)]" />
-                      </div>
-                      <div className="col-span-1 md:col-span-2">
-                        <label className="block text-[8px] font-mono text-[var(--muted)] mb-1 uppercase">Service Summary Details</label>
-                        <textarea rows="2" value={svc.description} onChange={(e) => handleServiceChange(idx, "description", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)]" />
+                        <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Custom Thumbnail URL (Optional)</label>
+                        <input type="text" value={vid.thumbnail || ""} onChange={(e) => handleYoutubeChange(idx, "thumbnail", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] font-mono text-neutral-500" placeholder="Leaves empty to auto-fetch" />
                       </div>
                     </div>
                   </div>
@@ -885,6 +1253,143 @@ export default function AdminPanel() {
             </div>
           )}
 
+          {/* TAB 8: PROMOTIONS */}
+          {activeTab === "promotions" && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center border-b border-neutral-900 pb-4">
+                <span className="text-[10px] uppercase font-bold text-[var(--muted)]">Manage Global Discount & Promo Codes</span>
+              </div>
+
+              <div className="p-6 border border-neutral-900 rounded-xl space-y-4 bg-neutral-950/20">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="col-span-1 md:col-span-2 flex items-center gap-3">
+                    <label className="text-[10px] font-mono text-[var(--muted)] uppercase tracking-widest flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={config.globalDiscount?.active || false} 
+                        onChange={(e) => handlePromoChange("active", e.target.checked)}
+                        className="w-4 h-4 accent-[var(--gold)] cursor-pointer"
+                      />
+                      Enable Global Promotion
+                    </label>
+                  </div>
+                  
+                  <div className={`col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 transition-opacity ${!config.globalDiscount?.active ? "opacity-30 pointer-events-none" : "opacity-100"}`}>
+                    <div>
+                      <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Banner Text (Shows at the top of the site)</label>
+                      <input type="text" value={config.globalDiscount?.bannerText || ""} onChange={(e) => handlePromoChange("bannerText", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] font-bold" />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Secret Coupon Code</label>
+                      <input type="text" value={config.globalDiscount?.code || ""} onChange={(e) => handlePromoChange("code", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] font-mono uppercase" />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Discount Type</label>
+                      <select value={config.globalDiscount?.type || "percent"} onChange={(e) => handlePromoChange("type", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] focus:outline-none">
+                        <option value="percent">Percentage (%)</option>
+                        <option value="flat">Flat Amount (₹)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Discount Value</label>
+                      <input type="number" value={config.globalDiscount?.value || 0} onChange={(e) => handlePromoChange("value", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--neon-green)] font-mono font-bold" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 9: BACKGROUNDS */}
+          {activeTab === "backgrounds" && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center border-b border-neutral-900 pb-4">
+                <span className="text-[10px] uppercase font-bold text-[var(--muted)]">Manage Section Backgrounds</span>
+              </div>
+              <p className="text-xs text-[var(--muted)]">Upload a background image/video or paste a direct MP4/YouTube link for each section.</p>
+              <div className="p-3 bg-[var(--gold)]/10 border border-[var(--gold)]/20 rounded-lg">
+                <p className="text-[10px] text-[var(--gold)] uppercase font-mono tracking-wider font-bold">Recommended Aspect Ratio</p>
+                <p className="text-xs text-white/80 mt-1 leading-relaxed">
+                  16:9 Landscape (e.g. 1920x1080) for best desktop view. The website automatically crops and centers the image/video to fill the screen on mobile devices. You do not need separate files for mobile.
+                </p>
+              </div>
+
+              <div className="space-y-6">
+                {config.sectionsOrder.map((sectionId) => {
+                  const bg = config.sectionBackgrounds?.[sectionId] || { type: "color", url: "", overlayOpacity: 0.5 };
+                  return (
+                    <div key={sectionId} className="p-6 border border-neutral-900 rounded-xl space-y-4 relative bg-neutral-950/20">
+                      <h3 className="font-[family-name:var(--font-playfair)] italic text-lg font-bold border-b border-neutral-900 pb-2 uppercase text-[var(--gold)]">
+                        {sectionId.replace(/-/g, " ")} Section
+                      </h3>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div>
+                          <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Background Type</label>
+                          <select 
+                            value={bg.type} 
+                            onChange={(e) => handleBackgroundChange(sectionId, "type", e.target.value)} 
+                            className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] focus:outline-none"
+                          >
+                            <option value="color">Solid Dark (Default)</option>
+                            <option value="image">Image (Upload/Link)</option>
+                            <option value="video">Video (MP4/YouTube)</option>
+                          </select>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Dark Overlay Opacity (0 to 1)</label>
+                          <input 
+                            type="range" 
+                            min="0" max="1" step="0.1" 
+                            value={bg.overlayOpacity} 
+                            onChange={(e) => handleBackgroundChange(sectionId, "overlayOpacity", e.target.value)} 
+                            className="w-full accent-[var(--gold)] mt-2" 
+                          />
+                          <div className="text-right text-[9px] font-mono mt-1 text-[var(--gold)]">{bg.overlayOpacity} opacity</div>
+                        </div>
+
+                        {bg.type !== "color" && (
+                          <div className="col-span-1 md:col-span-2">
+                            <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Media URL (Paste direct link OR upload)</label>
+                            <div className="flex gap-2">
+                              <input 
+                                type="text" 
+                                value={bg.url} 
+                                onChange={(e) => handleBackgroundChange(sectionId, "url", e.target.value)} 
+                                className="flex-1 bg-[#070708] border border-neutral-900 rounded p-2 text-xs text-[var(--text)] font-mono text-[var(--neon-blue)]" 
+                                placeholder="Paste MP4, Image, or YouTube URL..." 
+                              />
+                              <label className="px-3 py-2 bg-neutral-900 border border-neutral-800 hover:border-neutral-700 rounded font-bold text-[9px] uppercase tracking-wider text-center cursor-pointer shrink-0 flex items-center justify-center">
+                                {uploadingField === `bg-${sectionId}` ? 'Uploading...' : 'Upload File'}
+                                <input 
+                                  type="file" 
+                                  accept={bg.type === "video" ? "video/*" : "image/*"} 
+                                  onChange={(e) => handleBackgroundUpload(e, sectionId)} 
+                                  className="hidden" 
+                                  disabled={uploadingField === `bg-${sectionId}`} 
+                                />
+                              </label>
+                              <button 
+                                onClick={() => handleDeleteMedia(bg.url, () => handleBackgroundChange(sectionId, "url", ""))} 
+                                className="px-3 py-2 bg-red-950/30 border border-red-900/50 hover:bg-red-900/50 text-red-500 rounded font-bold text-[9px] uppercase tracking-wider transition-colors shrink-0 flex items-center justify-center"
+                                title="Delete media from Cloudinary"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                            {bg.type === "video" && <p className="text-[9px] text-[var(--muted)] mt-1 italic">For optimal performance, use a compressed .mp4 file or paste a YouTube URL.</p>}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          </div>
         </div>
       </main>
     </div>

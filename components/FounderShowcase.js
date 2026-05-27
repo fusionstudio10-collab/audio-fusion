@@ -1,8 +1,23 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { X } from "lucide-react";
 
 export default function FounderShowcase({ founders = [] }) {
-  const [activeFounder, setActiveFounder] = useState(null);
+  const [hoveredFounder, setHoveredFounder] = useState(null);
+  const [selectedFounderId, setSelectedFounderId] = useState(null);
+
+  // Prevent background scrolling when modal is open
+  useEffect(() => {
+    if (selectedFounderId) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [selectedFounderId]);
 
   if (!founders || founders.length === 0) return null;
 
@@ -22,14 +37,15 @@ export default function FounderShowcase({ founders = [] }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16">
         {founders.map((f, index) => {
           const isFirst = index === 0;
-          const isHovered = activeFounder === f.id;
+          const isHovered = hoveredFounder === f.id;
 
           return (
             <div
               key={f.id}
-              className="relative rounded-2xl overflow-hidden glass-card p-8 md:p-10 border border-neutral-900 group transition-all duration-500 ease-out hover:-translate-y-1.5"
-              onMouseEnter={() => setActiveFounder(f.id)}
-              onMouseLeave={() => setActiveFounder(null)}
+              className="relative rounded-2xl overflow-hidden glass-card p-8 md:p-10 border border-neutral-900 group transition-all duration-500 ease-out hover:-translate-y-1.5 cursor-pointer"
+              onMouseEnter={() => setHoveredFounder(f.id)}
+              onMouseLeave={() => setHoveredFounder(null)}
+              onClick={() => setSelectedFounderId(f.id)}
               style={{
                 boxShadow: isHovered
                   ? isFirst
@@ -82,6 +98,80 @@ export default function FounderShowcase({ founders = [] }) {
           );
         })}
       </div>
+
+      {/* MODAL / POPUP FOR FOUNDER DETAILS */}
+      {selectedFounderId && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 md:p-12 animate-[fadeIn_0.3s_ease-out_forwards]">
+          {/* Blurred Background Overlay */}
+          <div 
+            className="absolute inset-0 bg-[#070708]/80 backdrop-blur-xl transition-opacity cursor-pointer" 
+            onClick={() => setSelectedFounderId(null)}
+          />
+          
+          {/* Modal Content Box */}
+          <div className="relative z-10 w-full max-w-4xl bg-[#070708] border border-[var(--gold)]/20 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col md:flex-row max-h-[90vh]">
+            {/* Close Button */}
+            <button 
+              onClick={() => setSelectedFounderId(null)}
+              className="absolute top-4 right-4 z-20 w-10 h-10 bg-black/50 hover:bg-neutral-800 rounded-full flex items-center justify-center text-white/70 hover:text-white transition-colors border border-white/10"
+            >
+              <X size={20} />
+            </button>
+
+            {/* Left side: Big Image */}
+            <div className="w-full md:w-5/12 h-64 md:h-auto relative shrink-0">
+              {founders.find(f => f.id === selectedFounderId)?.photo && (
+                <img 
+                  src={founders.find(f => f.id === selectedFounderId).photo} 
+                  alt={founders.find(f => f.id === selectedFounderId).name} 
+                  className="w-full h-full object-cover"
+                />
+              )}
+              {/* Fade gradient on mobile bottom, desktop right */}
+              <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-[#070708] to-transparent pointer-events-none" />
+            </div>
+
+            {/* Right side: Detailed Information */}
+            <div className="flex-1 p-8 md:p-12 overflow-y-auto custom-scrollbar">
+              {(() => {
+                const f = founders.find(f => f.id === selectedFounderId);
+                if (!f) return null;
+                return (
+                  <div className="space-y-8">
+                    <div>
+                      <h3 className="font-[family-name:var(--font-playfair)] italic text-4xl sm:text-5xl font-black text-white">
+                        {f.name}
+                      </h3>
+                      <span className="inline-block font-mono text-[11px] font-bold tracking-[3px] uppercase mt-3 px-3 py-1 border border-[var(--gold)]/30 rounded text-[var(--gold)] bg-[var(--gold)]/10">
+                        {f.role}
+                      </span>
+                    </div>
+
+                    <div className="space-y-6">
+                      <div>
+                        <h4 className="font-mono text-[10px] tracking-[2px] text-[var(--muted)] uppercase mb-2">Short Bio</h4>
+                        <p className="font-[family-name:var(--font-instrument)] italic text-lg sm:text-xl leading-relaxed text-white/90">
+                          {f.bio}
+                        </p>
+                      </div>
+
+                      <div className="h-[1px] w-full bg-neutral-900" />
+
+                      <div>
+                        <h4 className="font-mono text-[10px] tracking-[2px] text-[var(--muted)] uppercase mb-3">Experience & Achievements</h4>
+                        <p className="font-[family-name:var(--font-instrument)] text-base leading-loose text-[var(--muted)] whitespace-pre-line">
+                          {f.experience || "More details coming soon."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </section>
   );
 }

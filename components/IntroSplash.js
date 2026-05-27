@@ -20,29 +20,36 @@ export default function IntroSplash({ onEnter, logoText = "AUDIO FUSION", logoUr
         }
         // Organic loading speed jumps
         const increment = Math.floor(Math.random() * 12) + 4;
-        return Math.min(prev + increment, 100);
+        const nextProgress = Math.min(prev + increment, 100);
+        
+        if (nextProgress === 100 && prev < 100) {
+          setIsLoaded(true);
+        }
+        
+        return nextProgress;
       });
-    }, 150);
+    }, 120);
 
     return () => {
       clearInterval(interval);
     };
   }, []);
 
-  const handleEnterClick = () => {
-    setEntered(true);
-    
-    // 1. Initialize & trigger Web Audio engine
-    audioEngine.init();
-    audioEngine.playGlitch();
-    audioEngine.startHiss();
+  useEffect(() => {
+    if (isLoaded && !entered) {
+      setTimeout(() => {
+        setEntered(true);
+        audioEngine.init();
+        audioEngine.playGlitch();
+        audioEngine.startHiss();
 
-    // 2. Fades out elements, then unlocks landing page scroll
-    setTimeout(() => {
-      document.body.classList.remove("intro-active");
-      onEnter();
-    }, 700);
-  };
+        setTimeout(() => {
+          document.body.classList.remove("intro-active");
+          onEnter();
+        }, 700);
+      }, 400); // short pause at 100% before dissolving
+    }
+  }, [isLoaded, entered, onEnter]);
 
   if (entered && loadingProgress === 100) {
     // Return a dissolving viewport overlay during transition
@@ -71,7 +78,7 @@ export default function IntroSplash({ onEnter, logoText = "AUDIO FUSION", logoUr
         </div>
 
         {logoUrl ? (
-          <div className="w-40 h-40 mx-auto mb-6 relative flex items-center justify-center">
+          <div className="w-56 h-56 sm:w-64 sm:h-64 mx-auto mb-6 relative flex items-center justify-center">
             <img
               src={logoUrl}
               alt={logoText}
@@ -91,30 +98,19 @@ export default function IntroSplash({ onEnter, logoText = "AUDIO FUSION", logoUr
           {tagline}
         </p>
 
-        {/* PROGRESS BAR or BUTTON */}
-        {!isLoaded ? (
-          <div className="w-56 mx-auto">
-            <div className="flex justify-between items-center text-[9px] font-mono text-[var(--muted)] mb-2 uppercase">
-              <span>SYSTEM BOOTING...</span>
-              <span>{loadingProgress}%</span>
-            </div>
-            <div className="h-[2px] w-full bg-neutral-900 overflow-hidden relative">
-              <div 
-                className="h-full bg-gradient-to-r from-[var(--neon-purple)] to-[var(--neon-blue)] transition-all duration-150"
-                style={{ width: `${loadingProgress}%` }}
-              />
-            </div>
+        {/* PROGRESS BAR */}
+        <div className={`w-56 mx-auto transition-opacity duration-300 ${isLoaded ? "opacity-0" : "opacity-100"}`}>
+          <div className="flex justify-between items-center text-[9px] font-mono text-[var(--muted)] mb-2 uppercase">
+            <span>SYSTEM BOOTING...</span>
+            <span>{loadingProgress}%</span>
           </div>
-        ) : (
-          <button
-            onClick={handleEnterClick}
-            data-cursor
-            data-cursor-text="ENTER"
-            className="group px-7 py-3 border border-[var(--text)] rounded-[4px] text-[11px] font-[family-name:var(--font-syne)] font-bold tracking-[3px] uppercase hover:bg-white hover:text-black transition-all duration-300 ease-out cursor-pointer hover:shadow-[0_0_20px_rgba(255,255,255,0.2)]"
-          >
-            Enter Studio
-          </button>
-        )}
+          <div className="h-[2px] w-full bg-neutral-900 overflow-hidden relative">
+            <div 
+              className="h-full bg-gradient-to-r from-[var(--neon-purple)] to-[var(--neon-blue)] transition-all duration-150"
+              style={{ width: `${loadingProgress}%` }}
+            />
+          </div>
+        </div>
       </div>
 
       {/* FLOATING VINTAGE CRT SHADOW GRID */}

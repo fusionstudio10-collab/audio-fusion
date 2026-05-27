@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   MessageSquare, Send, X, Calendar, Mail, ArrowUpRight, MapPin, Menu
 } from "lucide-react";
+import { motion, useScroll, useTransform } from "framer-motion";
 
 import { defaultConfig } from "./lib/defaultConfig";
 import audioEngine from "./lib/audioEngine";
@@ -16,6 +17,44 @@ import FounderShowcase from "../components/FounderShowcase";
 import ServicesList from "../components/ServicesList";
 import BookingFlow from "../components/BookingFlow";
 import PortfolioShowcase from "../components/PortfolioShowcase";
+import YoutubeShowcase from "../components/YoutubeShowcase";
+
+const SectionWrapper = ({ id, bgConfig, children }) => {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const y = useTransform(scrollYProgress, [0, 1], ["-15%", "15%"]);
+
+  return (
+    <div id={`wrapper-${id}`} ref={ref} className="relative w-full overflow-hidden">
+      {/* Background Layer (Fixed to this container with Parallax) */}
+      {bgConfig && bgConfig.type !== "color" && bgConfig.url && (
+        <motion.div className="absolute inset-0 w-full h-full pointer-events-none" style={{ y, zIndex: 0 }}>
+          {bgConfig.type === "video" ? (
+            <video src={bgConfig.url} autoPlay loop muted playsInline className="w-full h-full object-cover scale-[1.3] filter brightness-75" />
+          ) : (
+            <img src={bgConfig.url} alt="" className="w-full h-full object-cover scale-[1.3] filter brightness-75" />
+          )}
+        </motion.div>
+      )}
+      
+      {/* Dark Overlay Layer */}
+      {bgConfig && bgConfig.type !== "color" && (
+        <div className="absolute inset-0 bg-[#070708] pointer-events-none" style={{ opacity: bgConfig.overlayOpacity || 0.6, zIndex: 1 }} />
+      )}
+      
+      {/* Content Layer with Entry Animation */}
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-10"
+      >
+        {children}
+      </motion.div>
+    </div>
+  );
+};
 
 export default function Home() {
   const [hasEntered, setHasEntered] = useState(false);
@@ -114,6 +153,19 @@ export default function Home() {
     }
   }, [messages, isChatOpen]);
 
+  // Global Keyboard Shortcut (Cmd+K / Ctrl+K) to open chat
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setIsChatOpen((prev) => !prev);
+        if (!isChatOpen) audioEngine.playClick();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isChatOpen]);
+
   if (!config) return null;
 
   const handleNavClick = () => {
@@ -122,9 +174,13 @@ export default function Home() {
   };
 
   const handleBookClick = (serviceName) => {
-    audioEngine.playClick();
+    if (audioEngine && audioEngine.playClick) {
+      try { audioEngine.playClick(); } catch(e) {}
+    }
     setPreselectedService(serviceName);
-    document.getElementById("booking")?.scrollIntoView({ behavior: "smooth" });
+    setTimeout(() => {
+      document.getElementById("booking")?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
   };
 
   const handleSendChatMessage = () => {
@@ -167,6 +223,13 @@ export default function Home() {
   return (
     <>
       <CustomCursor />
+
+      {/* GLOBAL PROMO BANNER */}
+      {config.globalDiscount?.active && hasEntered && (
+        <div className="fixed top-0 left-0 right-0 z-[100] bg-[var(--gold)] text-[#070708] py-2 px-4 text-center font-[family-name:var(--font-syne)] text-[10px] sm:text-xs font-bold tracking-[2px] uppercase flex justify-center items-center gap-3">
+          <span>{config.globalDiscount.bannerText}</span>
+        </div>
+      )}
 
       {/* BACKGROUND EFFECTS */}
       <div className="film-grain" />
@@ -211,23 +274,15 @@ export default function Home() {
           <ul className="hidden md:flex gap-8 lg:gap-10 items-center list-none text-[10px] font-[family-name:var(--font-syne)] font-bold tracking-[3px] uppercase">
             {navLinks.map((l) => (
               <li key={l.id}>
-                <a href={`#${l.id}`} onClick={handleNavClick} className="text-[var(--muted)] hover:text-[var(--text)] transition-colors">
+                <a href={`#${l.id}`} onClick={handleNavClick} className="text-[var(--muted)] hover:text-[var(--text)] transition-colors hover-underline">
                   {l.label}
                 </a>
               </li>
             ))}
-            <li>
-              <Link href="/admin" className="px-3.5 py-1.5 border border-neutral-800 rounded hover:border-[var(--gold)] text-[var(--gold)] transition-colors">
-                Admin
-              </Link>
-            </li>
           </ul>
 
-          {/* Mobile: Admin + Hamburger */}
+          {/* Mobile: Hamburger */}
           <div className="flex md:hidden items-center gap-3">
-            <Link href="/admin" className="px-3 py-1.5 border border-neutral-800 rounded text-[9px] font-bold tracking-widest uppercase text-[var(--gold)] hover:border-[var(--gold)] transition-colors">
-              Admin
-            </Link>
             <button
               onClick={() => { audioEngine.playClick(); setMobileMenuOpen(!mobileMenuOpen); }}
               className="p-1.5 text-[var(--muted)] hover:text-white transition-colors"
@@ -264,10 +319,12 @@ export default function Home() {
       <main className={`transition-all duration-1000 ${hasEntered ? "opacity-100 filter-none" : "opacity-0 blur-md pointer-events-none"}`}>
         {config.sectionsOrder.map((sectionId) => {
 
+          let sectionContent = null;
+
           // ── HERO ──────────────────────────────────────────
           if (sectionId === "hero") {
-            return (
-              <section key="hero" className="min-h-[100svh] flex flex-col justify-end px-5 sm:px-8 md:px-16 pb-16 sm:pb-24 relative overflow-hidden pt-20">
+            sectionContent = (
+              <section key="hero" id="hero" className="min-h-[100svh] flex flex-col justify-end px-5 sm:px-8 md:px-16 pb-16 sm:pb-24 relative overflow-hidden pt-20">
                 <InteractiveVisualizer isPlaying={isPlayingTrack} />
 
                 {/* Hero intro — top right on desktop, center on mobile */}
@@ -275,14 +332,6 @@ export default function Home() {
                   <p className="font-[family-name:var(--font-instrument)] italic text-base sm:text-lg md:text-xl leading-relaxed text-[var(--muted)]">
                     {config.heroIntro}
                   </p>
-                  <button
-                    onClick={() => { audioEngine.playClick(); setIsChatOpen(true); }}
-                    data-cursor data-cursor-text="CHAT"
-                    className="inline-flex items-center gap-2 text-[var(--text)] font-[family-name:var(--font-syne)] text-[10px] font-bold tracking-[2px] uppercase border-b border-neutral-800 pb-1.5 hover:border-[var(--text)] hover:text-white transition-colors cursor-pointer"
-                  >
-                    <span>Consult 1:1 with us</span>
-                    <ArrowUpRight className="w-3.5 h-3.5" />
-                  </button>
                 </div>
 
                 {/* Big title */}
@@ -306,28 +355,38 @@ export default function Home() {
               </section>
             );
           }
-
           // ── FOUNDERS ──────────────────────────────────────
-          if (sectionId === "founders") return <FounderShowcase key="founders" founders={config.founders} />;
-
+          else if (sectionId === "founders") {
+            sectionContent = <FounderShowcase key="founders" founders={config.founders} />;
+          }
           // ── SHOWCASE ──────────────────────────────────────
-          if (sectionId === "showcase") return (
-            <PortfolioShowcase key="showcase" tracks={config.portfolio} onTrackPlayChange={(p) => setIsPlayingTrack(p)} />
-          );
-
+          else if (sectionId === "showcase") {
+            sectionContent = <PortfolioShowcase key="showcase" tracks={config.portfolio} onTrackPlayChange={(p) => setIsPlayingTrack(p)} />;
+          }
+          // ── YOUTUBE WORKS ─────────────────────────────────
+          else if (sectionId === "youtube-works" && config.youtubeWorks && config.youtubeWorks.length > 0) {
+            sectionContent = <YoutubeShowcase key="youtube-works" videos={config.youtubeWorks} />;
+          }
           // ── SERVICES ──────────────────────────────────────
-          if (sectionId === "services") return (
-            <ServicesList key="services" services={config.services} onBookClick={handleBookClick} />
-          );
-
+          else if (sectionId === "services") {
+            sectionContent = <ServicesList key="services" services={config.services} onBookClick={handleBookClick} whatsappNumber={config.whatsappNumber} />;
+          }
           // ── BOOKING ───────────────────────────────────────
-          if (sectionId === "booking") return (
-            <BookingFlow key="booking" services={config.services} preselectedService={preselectedService} whatsappNumber={config.whatsappNumber} />
-          );
-
+          else if (sectionId === "booking") {
+            sectionContent = (
+              <BookingFlow 
+                key="booking" 
+                services={config.services} 
+                preselectedService={preselectedService} 
+                whatsappNumber={config.whatsappNumber} 
+                globalDiscount={config.globalDiscount}
+              />
+            );
+          }
+          
           // ── CONTACT / FOOTER ──────────────────────────────
-          if (sectionId === "contact") {
-            return (
+          else if (sectionId === "contact") {
+            sectionContent = (
               <footer key="contact" className="bg-[#0b0b0d]/50 border-t border-neutral-900 pt-16 sm:pt-24 px-5 sm:px-8 md:px-16 pb-10 z-10 relative">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 mb-12 lg:mb-16">
                   {/* Left columns */}
@@ -388,31 +447,27 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row justify-between items-center border-t border-neutral-900/60 pt-8 text-[9px] font-mono tracking-widest text-[var(--muted)] uppercase gap-3">
+                <div className="flex flex-col sm:flex-row justify-center items-center border-t border-neutral-900/60 pt-8 text-[9px] font-mono tracking-widest text-[var(--muted)] uppercase gap-3">
                   <p>© 2026 {config.name} Studio. All Rights Reserved.</p>
-                  <p>Y2K Glitch Engine // Built by Antigravity</p>
                 </div>
               </footer>
             );
           }
 
           // ── CUSTOM SECTIONS ───────────────────────────────
-          if (sectionId.startsWith("custom-")) {
+          else if (sectionId.startsWith("custom-")) {
             const customSec = config.customSections?.find((s) => s.id === sectionId);
-            if (!customSec) return null;
-
-            if (customSec.layout === "text-only") {
-              return (
-                <section key={customSec.id} id={customSec.id} className="py-20 sm:py-28 px-5 sm:px-8 md:px-16 max-w-5xl mx-auto reveal-elem">
+            if (customSec) {
+              if (customSec.layout === "text-only") {
+                sectionContent = (
+                  <section key={customSec.id} id={customSec.id} className="py-20 sm:py-28 px-5 sm:px-8 md:px-16 max-w-5xl mx-auto reveal-elem">
                   <span className="text-[10px] tracking-[4px] uppercase font-bold text-[var(--gold)] mb-3 block font-[family-name:var(--font-syne)]">{customSec.subtitle}</span>
                   <h2 className="font-[family-name:var(--font-playfair)] italic text-3xl sm:text-4xl md:text-6xl font-black mb-8 leading-tight text-white">{customSec.title}</h2>
                   <p className="font-[family-name:var(--font-instrument)] italic text-base sm:text-lg md:text-2xl text-[var(--muted)] leading-relaxed whitespace-pre-line">{customSec.content}</p>
                 </section>
               );
-            }
-
-            if (customSec.layout === "cards-grid") {
-              return (
+            } else if (customSec.layout === "cards-grid") {
+              sectionContent = (
                 <section key={customSec.id} id={customSec.id} className="py-20 sm:py-28 px-5 sm:px-8 md:px-16 max-w-6xl mx-auto reveal-elem">
                   <span className="text-[10px] tracking-[4px] uppercase font-bold text-[var(--gold)] mb-3 block font-[family-name:var(--font-syne)]">{customSec.subtitle}</span>
                   <h2 className="font-[family-name:var(--font-playfair)] italic text-3xl sm:text-4xl md:text-6xl font-black mb-8 sm:mb-12 leading-tight text-white">{customSec.title}</h2>
@@ -427,10 +482,8 @@ export default function Home() {
                   </div>
                 </section>
               );
-            }
-
-            if (customSec.layout === "split-image-text") {
-              return (
+            } else if (customSec.layout === "split-image-text") {
+              sectionContent = (
                 <section key={customSec.id} id={customSec.id} className="py-20 sm:py-28 px-5 sm:px-8 md:px-16 max-w-6xl mx-auto reveal-elem">
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
                     <div className="lg:col-span-7 space-y-5">
@@ -451,77 +504,18 @@ export default function Home() {
               );
             }
           }
+        }
 
-          return null;
+          if (!sectionContent) return null;
+
+          return (
+            <SectionWrapper key={sectionId} id={sectionId} bgConfig={config.sectionBackgrounds?.[sectionId]}>
+              {sectionContent}
+            </SectionWrapper>
+          );
         })}
       </main>
 
-      {/* ── CHAT TOGGLE BUTTON ──────────────────────────── */}
-      {hasEntered && !isChatOpen && (
-        <button
-          onClick={() => { audioEngine.playClick(); setIsChatOpen(true); }}
-          data-cursor data-cursor-text="CHAT"
-          className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-[1000] w-12 h-12 sm:w-14 sm:h-14 bg-white text-black rounded-full flex items-center justify-center shadow-[0_0_24px_rgba(255,255,255,0.3)] hover:scale-105 transition-transform cursor-pointer"
-          aria-label="Open chat"
-        >
-          <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 fill-current" />
-        </button>
-      )}
-
-      {/* ── CHAT PANEL ──────────────────────────────────── */}
-      {isChatOpen && (
-        <div className="fixed bottom-0 right-0 sm:bottom-6 sm:right-6 z-[2000] w-full sm:w-[380px] h-[85svh] sm:h-[500px] rounded-t-2xl sm:rounded-2xl overflow-hidden glass-card border border-neutral-800 flex flex-col shadow-[0_12px_40px_rgba(0,0,0,0.8)] animate-[fadeIn_0.3s_ease_forwards]">
-          {/* Header */}
-          <div className="p-4 sm:p-5 border-b border-neutral-900 bg-neutral-950/60 flex justify-between items-center shrink-0">
-            <div>
-              <h3 className="font-[family-name:var(--font-playfair)] italic text-base sm:text-lg font-bold text-[var(--text)]">
-                Audio Fusion Bot
-              </h3>
-              <p className="text-[8px] font-mono text-[var(--neon-green)] tracking-widest uppercase mt-0.5">ONLINE // 24/7 SUPPORT</p>
-            </div>
-            <button onClick={() => { audioEngine.playClick(); setIsChatOpen(false); }} className="text-[var(--muted)] hover:text-white transition-colors p-1" aria-label="Close chat">
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3 sm:space-y-4 bg-neutral-950/20">
-            {messages.map((m, idx) => (
-              <div
-                key={idx}
-                className={`max-w-[85%] p-3 sm:p-3.5 rounded-xl text-xs leading-relaxed ${
-                  m.sender === "user"
-                    ? "bg-[var(--text)] text-black font-semibold ml-auto rounded-tr-none"
-                    : "bg-neutral-900/80 text-[var(--text)] border border-neutral-800/40 mr-auto rounded-tl-none"
-                }`}
-              >
-                {m.text}
-              </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Input */}
-          <div className="p-3 sm:p-4 border-t border-neutral-900 bg-neutral-950/40 flex gap-2 shrink-0">
-            <input
-              type="text"
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSendChatMessage()}
-              placeholder="Ask us a question..."
-              className="flex-1 bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2.5 text-xs text-[var(--text)] focus:outline-none focus:border-[var(--gold)] min-w-0"
-            />
-            <button
-              onClick={handleSendChatMessage}
-              disabled={!chatInput.trim()}
-              className="w-10 h-10 rounded-lg bg-[var(--text)] text-black flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
-              aria-label="Send message"
-            >
-              <Send className="w-4 h-4 fill-current" />
-            </button>
-          </div>
-        </div>
-      )}
     </>
   );
 }

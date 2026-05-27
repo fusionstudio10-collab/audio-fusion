@@ -45,3 +45,35 @@ export async function POST(request) {
     );
   }
 }
+
+export async function DELETE(request) {
+  try {
+    const { url } = await request.json();
+    
+    if (!url || !url.includes("res.cloudinary.com")) {
+      return NextResponse.json({ error: "Invalid Cloudinary URL" }, { status: 400 });
+    }
+
+    // Extract public_id from Cloudinary URL
+    // Format: https://res.cloudinary.com/<cloud_name>/<resource_type>/<type>/v<version>/<folder>/<public_id>.<extension>
+    const parts = url.split('/');
+    const fileWithExtension = parts.slice(7).join('/'); // Get everything after /vXXX/
+    
+    // Remove the extension
+    const publicId = fileWithExtension.substring(0, fileWithExtension.lastIndexOf('.')) || fileWithExtension;
+
+    // We also need to determine if it's an image or video based on the URL since Cloudinary destroy needs resource_type
+    // Usually the resource_type is parts[4]
+    const resourceType = parts[4] || "image";
+
+    const result = await cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
+    
+    return NextResponse.json({ success: true, result });
+  } catch (error) {
+    console.error("Cloudinary delete error:", error);
+    return NextResponse.json(
+      { error: "Delete failed", details: error.message },
+      { status: 500 }
+    );
+  }
+}

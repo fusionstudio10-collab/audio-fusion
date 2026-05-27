@@ -28,6 +28,7 @@ export const defaultConfig = {
       name: "Manoj Sahu",
       role: "Emcee Sahu / Executive Producer",
       bio: "Raw underground pioneer. Shaping heavy low-ends, hard-hitting drill beats, and raw vocal textures that cut through the noise.",
+      experience: "Over a decade of experience producing for the underground hip-hop scene. Has engineered over 500+ tracks, specializing in hard-hitting drill and trap arrangements. Co-founder of multiple independent labels and a master of vocal chain processing.",
       photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&auto=format&fit=crop"
     },
     {
@@ -35,40 +36,92 @@ export const defaultConfig = {
       name: "Psyclone",
       role: "Sound Architect / Mix Engineer",
       bio: "Analogue synth designer and spatial mixologist. Sweating frequencies and building custom sonic systems for cinematic impact.",
+      experience: "Certified spatial audio mix engineer with deep expertise in analog hardware. Has scored independent short films and mixed chart-topping electronic tracks. Known for custom-built synthesizer patches and surgical EQ precision.",
       photo: "https://images.unsplash.com/photo-1620121692029-d088224ddc74?q=80&w=600&auto=format&fit=crop"
     }
   ],
 
   services: [
+    // 1. Recording & Studio Bundles
     {
-      id: "rec-session",
-      category: "Recording Services",
-      name: "Recording Session",
-      price: 800,
-      originalPrice: 1000,
-      unit: "Per Hour",
-      description: "Track in an acoustically perfect room using high-end analog gear to capture the rawest, warmest sound possible.",
-      badge: "Best Vocal Space"
+      id: "vocal-rec", category: "Recording & Studio Bundles",
+      name: "Vocal Recording", price: 800, unit: "Hour",
+      description: "Raw vocal tracking session inside professionally treated acoustic booths, using industry-standard microphones."
     },
     {
-      id: "premium-mix",
-      category: "Mixing & Mastering",
-      name: "Premium Mix & Master",
-      price: 3500,
-      originalPrice: 5000,
-      unit: "Per Song",
-      description: "Vocal tuning, dynamic balance, and analog gear warmth for a loud, Spotify-competitive finish.",
-      badge: "Popular"
+      id: "rec-3hr", category: "Recording & Studio Bundles",
+      name: "3-Hour Recording Package", price: 2100, originalPrice: 2400, unit: "Package",
+      description: "A bulk booking discount that locks in a continuous 3-hour block for extended recording sessions.", badge: "Special Offer"
     },
     {
-      id: "complete-pack",
-      category: "Music Production",
-      name: "Complete Music Package",
-      price: 10000,
-      originalPrice: 12000,
-      unit: "Full Track",
-      description: "Includes custom beat production, 2 hours recording session, and premium mix/master with revision options.",
-      badge: "Artist Choice"
+      id: "ultimate-bundle", category: "Recording & Studio Bundles",
+      name: "The Ultimate All-In-One Bundle", price: 10000, unit: "Package",
+      description: "The studio's flagship production package. It includes 2 hours of vocal recording time + Full Custom Beat Production + Premium Mix & Master.", badge: "Special Offer"
+    },
+    // 2. Mixing & Mastering Tiers
+    {
+      id: "basic-mix", category: "Mixing & Mastering Tiers",
+      name: "Basic Mix & Master", price: 2000, unit: "Track",
+      description: "Budget-friendly post-production leveling, standard EQ, and compression setup inside the DAW for quick preview or independent releases."
+    },
+    {
+      id: "premium-mix", category: "Mixing & Mastering Tiers",
+      name: "Premium Mix & Master", price: 3500, unit: "Track",
+      description: "Industry-standard digital post-production. Includes detailed vocal tuning/pitch correction, multi-track leveling, surgical EQ, creative effects, compression, and a final polished commercial master."
+    },
+    {
+      id: "analogue-master", category: "Mixing & Mastering Tiers",
+      name: "Standard Analogue Master", price: 7500, unit: "Track",
+      description: "Premium hybrid workflow. Individual multi-track stems are separated and routed through physical outboard analogue hardware to inject warmth, punch, and high-end commercial-grade harmonic depth."
+    },
+    // 3. Beat Production
+    {
+      id: "custom-beat", category: "Beat Production",
+      name: "Custom Beat Production", price: 6500, unit: "Track",
+      description: "An exclusive, scratch-made instrumental production service. Music arrangements are tailor-made from the ground up to match the artist's specific style, tempo, and creative vision."
+    },
+    // 4. Video & Post-Production Visuals
+    {
+      id: "basic-video", category: "Video & Post-Production Visuals",
+      name: "Basic Video Shoot", price: 8500, unit: "Project",
+      description: "On-location high-quality raw video capture with professional camera rigs (post-production editing not included)."
+    },
+    {
+      id: "cinematic-video", category: "Video & Post-Production Visuals",
+      name: "Cinematic Video Shoot & Edit", price: 15500, unit: "Project",
+      description: "A complete visual package combining professional on-location filming with full post-production editing, transitions, and cinematic color grading."
+    },
+    {
+      id: "complete-visual", category: "Video & Post-Production Visuals",
+      name: "The Complete Visual Suite", price: 17500, unit: "Project",
+      description: "The definitive media package including On-Location Video Shooting + Full Video Editing + Promotional Poster Design + Creative Visualizers/Short-form Assets for a turn-key release."
+    },
+    // 5. Creative Art & Poster Design
+    {
+      id: "standard-poster", category: "Creative Art & Poster Design",
+      name: "Standard Creative Poster", price: 2000, unit: "Design",
+      description: "Custom-designed cover art or promotional poster tailored to the track's theme for digital platforms."
+    },
+    {
+      id: "master-poster", category: "Creative Art & Poster Design",
+      name: "Master Creative Poster Kit", price: 3500, unit: "Kit",
+      description: "Premium custom artwork adapted and resized into all required display sizes (e.g., Spotify Square, Instagram Stories/Reels, YouTube Banners, and widescreen formats)."
+    },
+    // 6. Distribution & Profile Management
+    {
+      id: "distro-basic", category: "Distribution & Profile Management",
+      name: "Digital Music Distribution (Basic)", price: 2000, unit: "Release",
+      description: "Global distribution bringing your tracks to Spotify, Apple Music/iTunes, JioSaavn, Amazon Music, and more."
+    },
+    {
+      id: "distro-star", category: "Distribution & Profile Management",
+      name: "Digital Music Distribution (Star Plan)", price: 2999, unit: "Release",
+      description: "Premium release tier associated directly with industry partners Madverse and Songdew."
+    },
+    {
+      id: "profile-retainer", category: "Distribution & Profile Management",
+      name: "Artist Profile Management Retainer", price: 5500, unit: "Month",
+      description: "A comprehensive monthly subscription handling your brand's digital presence across Instagram, Streaming Profiles (Spotify/Apple Music), and YouTube Channels. Includes hands-on management, asset uploads, strategic posting, bio updates, and setting up targeted paid ad campaigns."
     }
   ],
 
@@ -102,5 +155,37 @@ export const defaultConfig = {
     }
   ],
 
-  sectionsOrder: ["hero", "custom-studio-philosophy", "founders", "showcase", "services", "booking", "contact"]
+  youtubeWorks: [
+    {
+      id: "yt-1",
+      title: "Audio Fusion Behind the Scenes",
+      videoId: "dQw4w9WgXcQ", // Placeholder ID
+      thumbnail: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=600&auto=format&fit=crop"
+    },
+    {
+      id: "yt-2",
+      title: "Live Studio Session",
+      videoId: "ScMzIvxBSi4", // Placeholder ID
+      thumbnail: "https://images.unsplash.com/photo-1520626337854-325785f81216?q=80&w=600&auto=format&fit=crop"
+    }
+  ],
+
+  globalDiscount: {
+    active: false,
+    type: "percent", // 'percent' or 'fixed'
+    value: 10,
+    code: "FESTIVAL10",
+    bannerText: "Festival Sale! Get 10% off on all services. Use code: FESTIVAL10"
+  },
+
+  sectionBackgrounds: {
+    "founders": { type: "color", url: "", overlayOpacity: 0 },
+    "services": { type: "color", url: "", overlayOpacity: 0 },
+    "portfolio": { type: "color", url: "", overlayOpacity: 0 },
+    "booking": { type: "color", url: "", overlayOpacity: 0 },
+    "youtube-works": { type: "color", url: "", overlayOpacity: 0 },
+    "custom-studio-philosophy": { type: "color", url: "", overlayOpacity: 0 }
+  },
+
+  sectionsOrder: ["hero", "custom-studio-philosophy", "founders", "youtube-works", "services", "booking", "contact"]
 };
