@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Play, X } from "lucide-react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import audioEngine from "../app/lib/audioEngine";
