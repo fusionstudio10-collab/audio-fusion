@@ -80,7 +80,7 @@ export default function ServicesList({ services = [], onBookClick, whatsappNumbe
                   <div key={svc.id} className="relative w-full h-full" style={{ perspective: 1500 }}>
                     <TiltCard>
                       <div
-                        className="glass-card neon-glow-border rounded-xl p-8 flex flex-col justify-between border border-neutral-900 bg-[#121214] h-full transition-colors duration-300 group-hover:border-white/10 group-hover:shadow-[0_0_30px_rgba(255,255,255,0.05)]"
+                        className="glass-card neon-glow-border rounded-xl p-5 sm:p-8 flex flex-col justify-between border border-neutral-900 bg-[#121214] h-full transition-colors duration-300 group-hover:border-white/10 group-hover:shadow-[0_0_30px_rgba(255,255,255,0.05)]"
                       >
                         <div>
                           {svc.badge && (
@@ -89,7 +89,7 @@ export default function ServicesList({ services = [], onBookClick, whatsappNumbe
                             </div>
                           )}
 
-                          <h4 className="font-[family-name:var(--font-playfair)] italic text-2xl font-bold mb-4 text-[var(--text)] group-hover:text-[var(--gold)] transition-colors pr-2">
+                          <h4 className="font-[family-name:var(--font-playfair)] italic text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-[var(--text)] group-hover:text-[var(--gold)] transition-colors pr-2">
                             {svc.name}
                           </h4>
 
@@ -99,7 +99,7 @@ export default function ServicesList({ services = [], onBookClick, whatsappNumbe
                                 ₹{svc.originalPrice}
                               </span>
                             )}
-                            <span className="text-4xl font-black text-[var(--text)] font-sans tracking-normal">
+                            <span className="text-3xl sm:text-4xl font-black text-[var(--text)] font-sans tracking-normal">
                               ₹{svc.price}
                             </span>
                             {svc.unit && (

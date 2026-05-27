@@ -29,7 +29,7 @@ export default function TestimonialMarquee({ testimonials = [] }) {
           {marqueeItems.map((item, idx) => (
             <div 
               key={idx} 
-              className="w-[300px] sm:w-[400px] mx-3 sm:mx-4 flex-shrink-0 bg-neutral-900/40 backdrop-blur-md border border-neutral-800 rounded-2xl p-6 sm:p-8 hover:border-[var(--gold)]/30 hover:bg-neutral-900/80 transition-all duration-300"
+              className="w-[260px] sm:w-[360px] mx-3 sm:mx-4 flex-shrink-0 bg-neutral-900/40 backdrop-blur-md border border-neutral-800 rounded-2xl p-4 sm:p-6 hover:border-[var(--gold)]/30 hover:bg-neutral-900/80 transition-all duration-300"
             >
               <Quote className="w-8 h-8 text-[var(--gold)]/40 mb-4" />
               <p className="font-sans text-sm sm:text-base text-neutral-300 leading-relaxed mb-6 italic">

@@ -125,7 +125,7 @@ export default function PortfolioShowcase({ tracks = [], onTrackPlayChange }) {
                 >
                   {/* IMAGE / COVER CONTAINER */}
                   <div 
-                    className="relative h-[340px] w-full overflow-hidden"
+                    className="relative h-[220px] sm:h-[280px] md:h-[340px] w-full overflow-hidden"
                     data-cursor
                     data-cursor-text={isCurrentPlaying ? "PAUSE" : "PLAY"}
                     onClick={() => handlePlayPause(track)}
@@ -168,9 +168,9 @@ export default function PortfolioShowcase({ tracks = [], onTrackPlayChange }) {
               </div>
 
               {/* CARD DETAILS */}
-              <div className="p-6 flex justify-between items-center bg-[var(--bg-card)]">
+              <div className="p-4 sm:p-6 flex justify-between items-center bg-[var(--bg-card)]">
                 <div>
-                  <h3 className="font-[family-name:var(--font-playfair)] italic text-2xl font-bold text-[var(--text)]">
+                  <h3 className="font-[family-name:var(--font-playfair)] italic text-xl sm:text-2xl font-bold text-[var(--text)]">
                     {track.title}
                   </h3>
                   <p className="font-[family-name:var(--font-syne)] text-[10px] tracking-wide text-[var(--muted)] uppercase mt-1">

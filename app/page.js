@@ -333,7 +333,7 @@ export default function Home() {
           // ── HERO ──────────────────────────────────────────
           if (sectionId === "hero") {
             sectionContent = (
-              <section key="hero" id="hero" className="min-h-[100svh] flex flex-col justify-end px-5 sm:px-8 md:px-16 pb-16 sm:pb-24 relative overflow-hidden pt-20">
+              <section key="hero" id="hero" className="min-h-[100svh] flex flex-col justify-end px-4 sm:px-8 md:px-16 pb-12 sm:pb-24 relative overflow-hidden pt-20">
                 <InteractiveVisualizer isPlaying={isPlayingTrack} />
 
                 {/* Hero intro — top right on desktop, center on mobile */}

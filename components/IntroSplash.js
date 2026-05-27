@@ -78,7 +78,7 @@ export default function IntroSplash({ onEnter, logoText = "AUDIO FUSION", logoUr
         </div>
 
         {logoUrl ? (
-          <div className="w-80 h-80 sm:w-96 sm:h-96 mx-auto mb-6 relative flex items-center justify-center">
+          <div className="w-52 h-52 sm:w-72 sm:h-72 md:w-80 md:h-80 mx-auto mb-6 relative flex items-center justify-center">
             <img
               src={logoUrl}
               alt={logoText}

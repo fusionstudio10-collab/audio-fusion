@@ -65,19 +65,19 @@ export default function FounderShowcase({ founders = [] }) {
   if (!founders || founders.length === 0) return null;
 
   return (
-    <section id="founders" className="py-28 px-6 md:px-16 max-w-6xl mx-auto relative z-10">
+    <section id="founders" className="py-16 sm:py-28 px-4 sm:px-8 md:px-16 max-w-6xl mx-auto relative z-10">
       {/* SECTION TITLE */}
-      <div className="mb-20 text-center md:text-left reveal-elem">
+      <div className="mb-10 sm:mb-20 text-center md:text-left reveal-elem">
         <span className="font-mono text-[10px] tracking-[4px] uppercase text-[var(--gold)]">
           The Minds Behind The Sound
         </span>
-        <h2 className="font-[family-name:var(--font-playfair)] italic text-5xl md:text-6xl font-black mt-2">
+        <h2 className="font-[family-name:var(--font-playfair)] italic text-4xl sm:text-5xl md:text-6xl font-black mt-2">
           Sonic Architects
         </h2>
       </div>
 
       {/* DUAL PERSONAS GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-10 lg:gap-16">
         {founders.map((f, index) => {
           const isFirst = index === 0;
           const isHovered = hoveredFounder === f.id;
@@ -86,7 +86,7 @@ export default function FounderShowcase({ founders = [] }) {
             <div key={f.id} className="relative perspective-1000 w-full h-full">
               <TiltCard>
                 <div
-                  className="relative rounded-2xl overflow-hidden glass-card p-8 md:p-10 border border-neutral-900 group transition-all duration-500 ease-out hover:-translate-y-1.5 cursor-pointer h-full"
+                  className="relative rounded-2xl overflow-hidden glass-card p-5 sm:p-8 md:p-10 border border-neutral-900 group transition-all duration-500 ease-out hover:-translate-y-1.5 cursor-pointer h-full"
                   onMouseEnter={() => setHoveredFounder(f.id)}
                   onMouseLeave={() => setHoveredFounder(null)}
                   onClick={() => setSelectedFounderId(f.id)}
@@ -108,11 +108,11 @@ export default function FounderShowcase({ founders = [] }) {
                   <div className="absolute top-0 right-0 w-16 h-16 pointer-events-none border-t-2 border-r-2 border-[var(--gold)] opacity-10 group-hover:opacity-60 transition-opacity duration-500 rounded-tr-2xl" />
 
                   {/* CARD BODY */}
-                  <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center md:items-start">
+                  <div className="relative z-10 flex flex-col gap-5 sm:gap-8 items-center">
 
                     {/* PHOTO */}
                     <div
-                      className="relative w-36 h-36 rounded-xl overflow-hidden shrink-0 border border-neutral-800 group-hover:border-[var(--gold)]/40 transition-colors duration-300"
+                      className="relative w-24 h-24 sm:w-36 sm:h-36 rounded-xl overflow-hidden shrink-0 border border-neutral-800 group-hover:border-[var(--gold)]/40 transition-colors duration-300"
                       data-cursor
                       data-cursor-text={isFirst ? "EMCEE" : "SYNTH"}
                     >
@@ -125,7 +125,7 @@ export default function FounderShowcase({ founders = [] }) {
 
                     {/* TEXTS */}
                     <div className="flex-1 text-center md:text-left">
-                      <h3 className="font-[family-name:var(--font-playfair)] italic text-3xl font-bold text-[var(--text)]">
+                      <h3 className="font-[family-name:var(--font-playfair)] italic text-2xl sm:text-3xl font-bold text-[var(--text)]">
                         {f.name}
                       </h3>
 
