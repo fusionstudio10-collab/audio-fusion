@@ -166,6 +166,29 @@ export const defaultConfig = {
     }
   ],
 
+  testimonials: [
+    {
+      client: "Aman",
+      role: "Music Producer",
+      text: "Audio Fusion took my track to the next level. The mix was punchy, the master was loud, and the overall vibe was exactly what I wanted. Highly recommend!"
+    },
+    {
+      client: "Sarah J.",
+      role: "Indie Artist",
+      text: "Working with this studio was an absolute dream. The attention to detail and creative input helped shape my EP into something truly special."
+    },
+    {
+      client: "DJ Kael",
+      role: "Electronic Producer",
+      text: "The low-end on my tracks has never sounded so tight. These guys know exactly how to get that industry standard sound without losing the soul."
+    },
+    {
+      client: "Priya",
+      role: "Singer-Songwriter",
+      text: "From vocal tuning to the final master, everything was flawless. A design-led audio approach is rare, and it shows in the final product."
+    }
+  ],
+
   youtubeWorks: [
     {
       id: "yt-1",

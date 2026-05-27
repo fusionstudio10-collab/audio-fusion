@@ -19,6 +19,7 @@ import BookingFlow from "../components/BookingFlow";
 import PortfolioShowcase from "../components/PortfolioShowcase";
 import YoutubeShowcase from "../components/YoutubeShowcase";
 import PosterGallery from "../components/PosterGallery";
+import TestimonialMarquee from "../components/TestimonialMarquee";
 
 const SectionWrapper = ({ id, bgConfig, children }) => {
   const ref = useRef(null);
@@ -215,6 +216,12 @@ export default function Home() {
     }, 600);
   };
 
+  // We will map over these section IDs to preserve user-defined background ordering
+  // (Assuming sectionOrder comes from config or is hardcoded here).
+  const sectionOrder = [
+    "hero", "founders", "posters", "showcase", "youtube-works", "services", "testimonials", "booking", "contact"
+  ];
+
   const navLinks = [
     { id: "founders", label: "Founders" },
     { id: "showcase", label: "Showcase" },
@@ -376,6 +383,10 @@ export default function Home() {
           // ── SERVICES ──────────────────────────────────────
           else if (sectionId === "services") {
             sectionContent = <ServicesList key="services" services={config.services} onBookClick={handleBookClick} whatsappNumber={config.whatsappNumber} />;
+          }
+          // ── TESTIMONIALS ──────────────────────────────────
+          else if (sectionId === "testimonials" && config.testimonials && config.testimonials.length > 0) {
+            sectionContent = <TestimonialMarquee key="testimonials" testimonials={config.testimonials} />;
           }
           // ── BOOKING ───────────────────────────────────────
           else if (sectionId === "booking") {
