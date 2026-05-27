@@ -5,14 +5,6 @@ import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 
 function TiltCard({ children }) {
   const ref = useRef(null);
-  const [isMobile, setIsMobile] = useState(false);
-  
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 1024);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -21,11 +13,8 @@ function TiltCard({ children }) {
   const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["10deg", "-10deg"]);
   const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-10deg", "10deg"]);
 
-  if (isMobile) {
-    return <div className="h-full w-full relative">{children}</div>;
-  }
-
   const handleMouseMove = (e) => {
+    if (typeof window !== "undefined" && window.innerWidth < 1024) return; // Completely disable logic on mobile
     if (!ref.current) return;
     const rect = ref.current.getBoundingClientRect();
     const width = rect.width;
@@ -153,7 +142,7 @@ export default function PosterGallery({ posters = [] }) {
   return (
     <section 
       id="posters" 
-      className="py-20 sm:py-28 overflow-hidden relative z-10 flex flex-col items-center bg-[#070708] min-h-[90vh] justify-center touch-none select-none"
+      className="py-20 sm:py-28 overflow-hidden relative z-10 flex flex-col items-center bg-[#070708] min-h-[90vh] justify-center touch-pan-y select-none"
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
