@@ -15,6 +15,21 @@
 }
 
 @layer base {
+
+  [data-theme='light'] {
+    --bg: #fdfbf7;
+    --bg-card: rgba(253, 251, 247, 0.85);
+    --text: #1a1a1a;
+    --muted: #737067;
+    --neon-purple: #b08d4a;
+    --neon-blue: #9a7631;
+    --neon-pink: #7a5820;
+    --neon-orange: #c26a04;
+    --neon-green: #a16f00;
+    --gold: #9a7631;
+    --border: rgba(0, 0, 0, 0.1);
+  }
+
   :root {
     --bg: #070708;
     --bg-card: rgba(15, 14, 12, 0.7);
@@ -367,3 +382,20 @@
 .safe-area-pb {
   padding-bottom: max(8px, env(safe-area-inset-bottom));
 }
+
+  /* Theme Transition Animation Overlay */
+  .theme-transition-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 999999;
+    pointer-events: none;
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform 1s cubic-bezier(0.645, 0.045, 0.355, 1);
+  }
+  .theme-transition-overlay.active {
+    transform: translate(-50%, -50%) scale(3);
+  }

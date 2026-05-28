@@ -11,6 +11,7 @@ import audioEngine from "./lib/audioEngine";
 
 // Core Components
 import CustomCursor from "../components/CustomCursor";
+import ThemeToggle from "../components/ThemeToggle";
 import InteractiveVisualizer from "../components/InteractiveVisualizer";
 import IntroSplash from "../components/IntroSplash";
 import FounderShowcase from "../components/FounderShowcase";
@@ -232,6 +233,7 @@ export default function Home() {
   return (
     <>
       <CustomCursor />
+      <ThemeToggle />
 
       {/* GLOBAL PROMO BANNER */}
       {config.globalDiscount?.active && hasEntered && (

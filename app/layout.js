@@ -2,6 +2,7 @@ import { Syne, Instrument_Serif, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { ToastContainer } from "../components/Toast";
 import SmoothScroll from "../components/SmoothScroll";
+import { ThemeProvider } from "../components/ThemeProvider";
 
 const syne = Syne({
   variable: "--font-syne",
@@ -30,13 +31,15 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${syne.variable} ${instrumentSerif.variable} ${playfair.variable} font-sans h-full antialiased dark`}
+      className={`${syne.variable} ${instrumentSerif.variable} ${playfair.variable} font-sans h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[var(--bg)] text-[var(--text)]">
-        <SmoothScroll>
+        <ThemeProvider>
+          <SmoothScroll>
           {children}
           <ToastContainer />
         </SmoothScroll>
+        </ThemeProvider>
       </body>
     </html>
   );
