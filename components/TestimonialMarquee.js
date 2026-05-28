@@ -8,8 +8,8 @@ export default function TestimonialMarquee({ testimonials = [] }) {
   const marqueeItems = [...testimonials, ...testimonials, ...testimonials, ...testimonials];
 
   return (
-    <section className="py-14 sm:py-20 md:py-28 bg-[#070708] relative overflow-hidden z-10 border-t border-neutral-900">
-      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[var(--gold)]/5 via-[#070708]/80 to-[#070708] z-0" />
+    <section className="py-14 sm:py-20 md:py-28 bg-[var(--bg)] relative overflow-hidden z-10 border-t border-[var(--border)]">
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[var(--gold)]/5 via-[var(--bg)]/80 to-[var(--bg)] z-0" />
       
       <div className="text-center mb-12 sm:mb-16 relative z-10 reveal-elem px-5">
         <span className="font-mono text-[10px] tracking-[4px] uppercase text-[#ff0000]">
@@ -22,21 +22,21 @@ export default function TestimonialMarquee({ testimonials = [] }) {
 
       <div className="relative w-full overflow-hidden flex flex-col gap-6 z-10">
         {/* Left/Right Fade Gradients for smooth entrance/exit */}
-        <div className="absolute top-0 bottom-0 left-0 w-16 sm:w-32 bg-gradient-to-r from-[#070708] to-transparent z-20" />
-        <div className="absolute top-0 bottom-0 right-0 w-16 sm:w-32 bg-gradient-to-l from-[#070708] to-transparent z-20" />
+        <div className="absolute top-0 bottom-0 left-0 w-16 sm:w-32 bg-gradient-to-r from-[var(--bg)] to-transparent z-20" />
+        <div className="absolute top-0 bottom-0 right-0 w-16 sm:w-32 bg-gradient-to-l from-[var(--bg)] to-transparent z-20" />
 
         <div className="flex w-max animate-marquee hover:[animation-play-state:paused]">
           {marqueeItems.map((item, idx) => (
             <div 
               key={idx} 
-              className="w-[260px] sm:w-[360px] mx-3 sm:mx-4 flex-shrink-0 bg-neutral-900/40 backdrop-blur-md border border-neutral-800 rounded-2xl p-4 sm:p-6 hover:border-[var(--gold)]/30 hover:bg-neutral-900/80 transition-all duration-300"
+              className="w-[260px] sm:w-[360px] mx-3 sm:mx-4 flex-shrink-0 glass-card rounded-2xl p-4 sm:p-6 hover:border-[var(--gold)]/30 transition-all duration-300"
             >
               <Quote className="w-8 h-8 text-[var(--gold)]/40 mb-4" />
-              <p className="font-sans text-sm sm:text-base text-neutral-300 leading-relaxed mb-6 italic">
+              <p className="font-sans text-sm sm:text-base text-[var(--text)] leading-relaxed mb-6 italic">
                 &quot;{item.text}&quot;
               </p>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center border border-neutral-700 overflow-hidden">
+                <div className="w-10 h-10 rounded-full bg-[var(--bg)] flex items-center justify-center border border-[var(--border)] overflow-hidden">
                   {item.imageUrl ? (
                     <img src={item.imageUrl} alt={item.client} className="w-full h-full object-cover" />
                   ) : (
@@ -44,7 +44,7 @@ export default function TestimonialMarquee({ testimonials = [] }) {
                   )}
                 </div>
                 <div>
-                  <h4 className="font-bold text-white text-sm">{item.client}</h4>
+                  <h4 className="font-bold text-[var(--text)] text-sm">{item.client}</h4>
                   <p className="font-mono text-[10px] text-[var(--muted)] tracking-widest uppercase">{item.role}</p>
                 </div>
               </div>

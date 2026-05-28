@@ -80,7 +80,7 @@ export default function ServicesList({ services = [], onBookClick, whatsappNumbe
                   <div key={svc.id} className="relative w-full h-full" style={{ perspective: 1500 }}>
                     <TiltCard>
                       <div
-                        className="glass-card neon-glow-border rounded-xl p-5 sm:p-8 flex flex-col justify-between border border-neutral-900 bg-[#121214] h-full transition-colors duration-300 group-hover:border-white/10 group-hover:shadow-[0_0_30px_rgba(255,255,255,0.05)]"
+                        className="glass-card neon-glow-border rounded-xl p-5 sm:p-8 flex flex-col justify-between h-full transition-colors duration-300 group-hover:border-white/10 group-hover:shadow-[0_0_30px_rgba(255,255,255,0.05)]"
                       >
                         <div>
                           {svc.badge && (

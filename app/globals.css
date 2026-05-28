@@ -30,19 +30,7 @@
     --border: rgba(197, 160, 89, 0.08);
   }
 
-  [data-theme='light'] {
-    --bg: #fdfbf7;
-    --bg-card: rgba(253, 251, 247, 0.85);
-    --text: #1a1a1a;
-    --muted: #737067;
-    --neon-purple: #b08d4a;
-    --neon-blue: #9a7631;
-    --neon-pink: #7a5820;
-    --neon-orange: #c26a04;
-    --neon-green: #a16f00;
-    --gold: #9a7631;
-    --border: rgba(0, 0, 0, 0.1);
-  }
+
 
   html {
     scroll-behavior: smooth;

@@ -147,15 +147,15 @@ export default function FounderShowcase({ founders = [] }) {
 
       {/* MODAL / POPUP FOR FOUNDER DETAILS */}
       {selectedFounderId && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 md:p-12 animate-[fadeIn_0.3s_ease-out_forwards]">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 md:p-12 animate-[fadeIn_0.3s_ease_out_forwards]">
           {/* Blurred Background Overlay */}
           <div 
-            className="absolute inset-0 bg-[#070708]/80 backdrop-blur-xl transition-opacity cursor-pointer" 
+            className="absolute inset-0 bg-[var(--bg)]/85 backdrop-blur-xl transition-opacity cursor-pointer" 
             onClick={() => setSelectedFounderId(null)}
           />
           
           {/* Modal Content Box */}
-          <div className="relative z-10 w-full max-w-4xl bg-[#070708] border border-[var(--gold)]/20 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col md:flex-row max-h-[90svh] animate-[scaleUp_0.4s_cubic-bezier(0.16,1,0.3,1)_forwards]">
+          <div className="relative z-10 w-full max-w-4xl bg-[var(--bg)] border border-[var(--gold)]/20 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col md:flex-row max-h-[90svh] animate-[scaleUp_0.4s_cubic-bezier(0.16,1,0.3,1)_forwards]">
             {/* Close Button */}
             <button 
               onClick={() => setSelectedFounderId(null)}
@@ -163,7 +163,7 @@ export default function FounderShowcase({ founders = [] }) {
             >
               <X size={20} />
             </button>
-
+ 
             {/* Left side: Big Image */}
             <div className="w-full md:w-5/12 h-64 md:h-auto relative shrink-0">
               {founders.find(f => f.id === selectedFounderId)?.photo && (
@@ -174,9 +174,9 @@ export default function FounderShowcase({ founders = [] }) {
                 />
               )}
               {/* Fade gradient on mobile bottom, desktop right */}
-              <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-[#070708] to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-[var(--bg)] to-transparent pointer-events-none" />
             </div>
-
+ 
             {/* Right side: Detailed Information */}
             <div className="flex-1 p-8 md:p-12 overflow-y-auto custom-scrollbar">
               {(() => {
@@ -185,24 +185,24 @@ export default function FounderShowcase({ founders = [] }) {
                 return (
                   <div className="space-y-8">
                     <div>
-                      <h3 className="font-[family-name:var(--font-playfair)] italic text-4xl sm:text-5xl font-black text-white">
+                      <h3 className="font-[family-name:var(--font-playfair)] italic text-4xl sm:text-5xl font-black text-[var(--text)]">
                         {f.name}
                       </h3>
                       <span className="inline-block font-mono text-[11px] font-bold tracking-[3px] uppercase mt-3 px-3 py-1 border border-[var(--gold)]/30 rounded text-[var(--gold)] bg-[var(--gold)]/10">
                         {f.role}
                       </span>
                     </div>
-
+ 
                     <div className="space-y-6">
                       <div>
                         <h4 className="font-mono text-[10px] tracking-[2px] text-[var(--muted)] uppercase mb-2">Short Bio</h4>
-                        <p className="font-sans text-lg sm:text-xl leading-relaxed text-white/90">
+                        <p className="font-sans text-lg sm:text-xl leading-relaxed text-[var(--text)]/90">
                           {f.bio}
                         </p>
                       </div>
-
-                      <div className="h-[1px] w-full bg-neutral-900" />
-
+ 
+                      <div className="h-[1px] w-full bg-[var(--border)]" />
+ 
                       <div>
                         <h4 className="font-mono text-[10px] tracking-[2px] text-[var(--muted)] uppercase mb-3">Experience & Achievements</h4>
                         <p className="font-sans text-base leading-loose text-[var(--muted)] whitespace-pre-line">
