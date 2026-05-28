@@ -250,7 +250,7 @@ export default function PosterGallery({ posters = [] }) {
         @media (max-width: 640px) {
           .carousel-scene {
             height: 400px;
-            margin-top: 24px; /* Push carousel down to prevent overlapping title */
+            margin-top: 60px; /* Push carousel down to prevent overlapping title */
           }
           .type-poster {
             width: 180px;

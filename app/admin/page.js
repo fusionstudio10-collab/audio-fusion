@@ -987,6 +987,40 @@ export default function AdminPanel() {
                   );
                 })}
               </div>
+
+              {/* Add Hidden / Inactive Sections */}
+              {(() => {
+                const defaultSections = ["hero", "founders", "services", "posters", "showcase", "youtube-works", "booking", "contact"];
+                const customSections = config.customSections?.map(s => s.id) || [];
+                const allAvailable = [...new Set([...defaultSections, ...customSections])];
+                const inactive = allAvailable.filter(id => !config.sectionsOrder.includes(id));
+                
+                return (
+                  <div className="pt-6 border-t border-neutral-900 mt-6 space-y-3">
+                    <h3 className="text-xs uppercase font-bold text-[var(--muted)] tracking-wider">Add Hidden/Inactive Sections:</h3>
+                    {inactive.length === 0 ? (
+                      <p className="text-xs font-mono text-neutral-600">All available sections are active in the layout.</p>
+                    ) : (
+                      <div className="flex flex-wrap gap-3">
+                        {inactive.map(sectionId => {
+                          const isCustom = sectionId.startsWith("custom-");
+                          const customTitle = isCustom ? config.customSections?.find(s => s.id === sectionId)?.title : "";
+                          const label = isCustom ? `Custom: ${customTitle || sectionId}` : `${sectionId} section`;
+                          return (
+                            <button
+                              key={sectionId}
+                              onClick={() => toggleSectionActive(sectionId)}
+                              className="flex items-center gap-1.5 px-3 py-2 bg-neutral-900 border border-neutral-800 hover:border-[var(--gold)]/30 hover:text-white text-xs font-bold uppercase tracking-wider text-[var(--text)] rounded-lg transition-colors cursor-pointer"
+                            >
+                              <Plus size={12} className="text-[var(--gold)]" /> Add {label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           )}
 
