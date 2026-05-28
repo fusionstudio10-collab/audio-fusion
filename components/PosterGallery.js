@@ -144,7 +144,7 @@ export default function PosterGallery({ posters = [] }) {
   return (
     <section 
       id="posters" 
-      className="py-20 sm:py-28 overflow-hidden relative z-10 flex flex-col items-center bg-[#070708] min-h-[90vh] justify-center touch-pan-y select-none"
+      className="py-14 sm:py-20 md:py-28 overflow-hidden relative z-10 flex flex-col items-center bg-[#070708] touch-pan-y select-none"
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -152,7 +152,7 @@ export default function PosterGallery({ posters = [] }) {
       onPointerCancel={handlePointerUp}
     >
       {/* TITLE */}
-      <div className="absolute top-10 w-full text-center reveal-elem z-20 pointer-events-none">
+      <div className="w-full text-center reveal-elem z-20 pointer-events-none mb-8 sm:mb-16 mt-4">
         <span className="font-mono text-[10px] tracking-[4px] uppercase text-[var(--neon-blue)]">
           Visual Assets
         </span>
@@ -169,7 +169,7 @@ export default function PosterGallery({ posters = [] }) {
           display: flex;
           align-items: center;
           justify-content: center;
-          margin-top: 50px;
+          margin-top: 0px;
         }
         .carousel-ring {
           position: relative;
