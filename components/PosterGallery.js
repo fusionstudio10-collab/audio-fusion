@@ -152,7 +152,7 @@ export default function PosterGallery({ posters = [] }) {
       onPointerCancel={handlePointerUp}
     >
       {/* TITLE */}
-      <div className="w-full text-center reveal-elem z-20 pointer-events-none mb-8 sm:mb-16 mt-4">
+      <div className="w-full text-center reveal-elem z-20 pointer-events-none mb-12 sm:mb-16 mt-4">
         <span className="font-mono text-[10px] tracking-[4px] uppercase text-[var(--neon-blue)]">
           Visual Assets
         </span>
@@ -181,19 +181,19 @@ export default function PosterGallery({ posters = [] }) {
           position: absolute;
           inset: 0;
           transform-style: preserve-3d;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
         
         /* Aspect Ratio Logic */
         .type-poster {
           width: 300px;
           height: 300px; /* 1:1 */
-          margin-top: 50px; /* Center align */
         }
         .type-thumbnail {
           width: 400px;
           height: 225px; /* 16:9 */
-          margin-left: -50px; /* Adjust center */
-          margin-top: 87.5px;
         }
 
         .carousel-card {
@@ -250,17 +250,15 @@ export default function PosterGallery({ posters = [] }) {
         @media (max-width: 640px) {
           .carousel-scene {
             height: 400px;
+            margin-top: 24px; /* Push carousel down to prevent overlapping title */
           }
           .type-poster {
             width: 180px;
             height: 180px;
-            margin-top: 30px;
           }
           .type-thumbnail {
-            width: 260px;
-            height: 146px;
-            margin-left: -40px;
-            margin-top: 57px;
+            width: 240px;
+            height: 135px;
           }
         }
       `}} />
@@ -310,10 +308,10 @@ export default function PosterGallery({ posters = [] }) {
 
       {/* MODAL POP-UP */}
       {selectedPoster && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300 pointer-events-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-[fadeIn_0.3s_ease_forwards] pointer-events-auto">
           <div className="absolute inset-0 cursor-pointer" onClick={() => setSelectedPoster(null)}></div>
           
-          <div className="relative z-10 w-full max-w-4xl bg-[#0a0a0c] border border-white/10 rounded-2xl overflow-hidden shadow-2xl flex flex-col md:flex-row">
+          <div className="relative z-10 w-full max-w-4xl bg-[#0a0a0c] border border-white/10 rounded-2xl overflow-hidden shadow-2xl flex flex-col md:flex-row animate-[scaleUp_0.4s_cubic-bezier(0.16,1,0.3,1)_forwards]">
             <button 
               onClick={() => setSelectedPoster(null)}
               className="absolute top-4 right-4 z-20 p-2 bg-black/50 hover:bg-black/80 rounded-full text-white transition-colors"

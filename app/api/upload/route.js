@@ -54,17 +54,30 @@ export async function DELETE(request) {
       return NextResponse.json({ error: "Invalid Cloudinary URL" }, { status: 400 });
     }
 
-    // Extract public_id from Cloudinary URL
-    // Format: https://res.cloudinary.com/<cloud_name>/<resource_type>/<type>/v<version>/<folder>/<public_id>.<extension>
+    // Extract public_id from Cloudinary URL robustly
     const parts = url.split('/');
-    const fileWithExtension = parts.slice(7).join('/'); // Get everything after /vXXX/
+    const uploadDirIndex = parts.findIndex(p => p === "upload" || p === "video" || p === "raw");
+    if (uploadDirIndex === -1) {
+      return NextResponse.json({ error: "Invalid Cloudinary URL structure" }, { status: 400 });
+    }
+
+    let remainingParts = parts.slice(uploadDirIndex + 1);
     
-    // Remove the extension
+    // Strip transformation segment if present (e.g., c_fill,w_300 or similar containing commas/underscores)
+    if (remainingParts[0] && (remainingParts[0].includes(",") || (remainingParts[0].includes("_") && !remainingParts[0].startsWith("v")))) {
+      remainingParts.shift();
+    }
+    
+    // Strip version segment if present (e.g., v1716762391 or similar v+digits)
+    if (remainingParts[0] && remainingParts[0].startsWith("v") && /^\d+$/.test(remainingParts[0].substring(1))) {
+      remainingParts.shift();
+    }
+
+    const fileWithExtension = remainingParts.join('/');
     const publicId = fileWithExtension.substring(0, fileWithExtension.lastIndexOf('.')) || fileWithExtension;
 
-    // We also need to determine if it's an image or video based on the URL since Cloudinary destroy needs resource_type
-    // Usually the resource_type is parts[4]
-    const resourceType = parts[4] || "image";
+    // Determine the resource_type based on the URL parts
+    const resourceType = parts[uploadDirIndex - 1] || "image";
 
     const result = await cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
     

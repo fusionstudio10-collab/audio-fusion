@@ -155,7 +155,7 @@ export default function FounderShowcase({ founders = [] }) {
           />
           
           {/* Modal Content Box */}
-          <div className="relative z-10 w-full max-w-4xl bg-[#070708] border border-[var(--gold)]/20 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col md:flex-row max-h-[90svh]">
+          <div className="relative z-10 w-full max-w-4xl bg-[#070708] border border-[var(--gold)]/20 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col md:flex-row max-h-[90svh] animate-[scaleUp_0.4s_cubic-bezier(0.16,1,0.3,1)_forwards]">
             {/* Close Button */}
             <button 
               onClick={() => setSelectedFounderId(null)}

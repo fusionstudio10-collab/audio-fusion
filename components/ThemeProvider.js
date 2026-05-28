@@ -8,8 +8,12 @@ export function ThemeProvider({ children }) {
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("audio-fusion-theme") || "dark";
-    setTheme(savedTheme);
     document.documentElement.setAttribute("data-theme", savedTheme);
+    if (savedTheme !== "dark") {
+      setTimeout(() => {
+        setTheme(savedTheme);
+      }, 0);
+    }
   }, []);
 
   const toggleTheme = (e) => {

@@ -685,6 +685,7 @@ export default function AdminPanel() {
   const navItems = [
     { id: "global", icon: <Settings size={16} />, label: "Global Settings" },
     { id: "layout", icon: <Layout size={16} />, label: "Page Layout Sequences" },
+    { id: "custom-sections", icon: <Compass size={16} />, label: "Custom Page Blocks" },
     { id: "backgrounds", icon: <ImageIcon size={16} />, label: "Section Backgrounds & FX" },
     { id: "founders", icon: <Users size={16} />, label: "Founders Profiles" },
     { id: "youtube-works", icon: <Video size={16} />, label: "YouTube Works" },

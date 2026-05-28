@@ -15,14 +15,20 @@ export default function InteractiveVisualizer({ isPlaying = false }) {
     let width = (canvas.width = canvas.offsetWidth);
     let height = (canvas.height = canvas.offsetHeight);
 
+    let rect = canvas.getBoundingClientRect();
     const handleResize = () => {
       width = canvas.width = canvas.offsetWidth;
       height = canvas.height = canvas.offsetHeight;
+      rect = canvas.getBoundingClientRect();
     };
     window.addEventListener("resize", handleResize);
 
+    const handleScroll = () => {
+      rect = canvas.getBoundingClientRect();
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
     const handleMouseMove = (e) => {
-      const rect = canvas.getBoundingClientRect();
       mouseRef.current.targetX = e.clientX - rect.left;
       mouseRef.current.targetY = e.clientY - rect.top;
       mouseRef.current.force = 1.0; // Reset warp force
@@ -99,6 +105,7 @@ export default function InteractiveVisualizer({ isPlaying = false }) {
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("mousemove", handleMouseMove);
       cancelAnimationFrame(animId);
     };

@@ -174,7 +174,7 @@ export default function YoutubeShowcase({ videos = [] }) {
             <X className="w-6 h-6" />
           </button>
           
-          <div className="w-full max-w-6xl aspect-video rounded-xl overflow-hidden shadow-[0_0_50px_rgba(255,0,0,0.15)] border border-neutral-800">
+          <div className="w-full max-w-6xl aspect-video rounded-xl overflow-hidden shadow-[0_0_50px_rgba(255,0,0,0.15)] border border-neutral-800 animate-[scaleUp_0.4s_cubic-bezier(0.16,1,0.3,1)_forwards]">
             <iframe 
               width="100%" 
               height="100%" 

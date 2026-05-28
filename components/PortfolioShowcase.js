@@ -50,31 +50,43 @@ export default function PortfolioShowcase({ tracks = [], onTrackPlayChange }) {
   const audioRef = useRef(null);
 
   useEffect(() => {
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
+    // Create Audio instance on client-side mount
+    const audio = new Audio();
+    audioRef.current = audio;
+
+    const handleEnded = () => {
+      setIsPlaying(false);
+      setActiveTrackId(null);
+      if (onTrackPlayChange) onTrackPlayChange(false);
     };
-  }, []);
+
+    audio.addEventListener("ended", handleEnded);
+
+    return () => {
+      audio.pause();
+      audio.removeEventListener("ended", handleEnded);
+    };
+  }, [onTrackPlayChange]);
 
   const handlePlayPause = (track) => {
-    if (!audioRef.current) audioRef.current = new Audio();
+    const audio = audioRef.current;
+    if (!audio) return;
 
     if (activeTrackId === track.id) {
       if (isPlaying) {
-        audioRef.current.pause();
+        audio.pause();
         setIsPlaying(false);
         if (onTrackPlayChange) onTrackPlayChange(false);
       } else {
-        audioRef.current.play().catch((e) => console.log("Audio play blocked", e));
+        audio.play().catch((e) => console.log("Audio play blocked", e));
         setIsPlaying(true);
         if (onTrackPlayChange) onTrackPlayChange(true);
       }
     } else {
-      audioRef.current.pause();
-      audioRef.current.src = track.audioUrl;
-      audioRef.current.load();
-      audioRef.current
+      audio.pause();
+      audio.src = track.audioUrl;
+      audio.load();
+      audio
         .play()
         .then(() => {
           setActiveTrackId(track.id);
@@ -84,20 +96,6 @@ export default function PortfolioShowcase({ tracks = [], onTrackPlayChange }) {
         .catch((e) => console.warn("Failed to play track:", e));
     }
   };
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const handleEnded = () => {
-      setIsPlaying(false);
-      setActiveTrackId(null);
-      if (onTrackPlayChange) onTrackPlayChange(false);
-    };
-
-    audio.addEventListener("ended", handleEnded);
-    return () => audio.removeEventListener("ended", handleEnded);
-  }, [activeTrackId, onTrackPlayChange]);
 
   if (!tracks || tracks.length === 0) return null;
 
