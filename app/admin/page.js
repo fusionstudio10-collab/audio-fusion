@@ -1648,12 +1648,12 @@ export default function AdminPanel() {
       </main>
 
       {/* Mobile Bottom Tab Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0a0a0c]/95 backdrop-blur-md border-t border-neutral-900 flex items-center justify-around px-2 py-1 safe-area-pb">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0a0a0c]/95 backdrop-blur-md border-t border-neutral-900 flex items-center overflow-x-auto gap-1 px-4 py-2 safe-area-pb hide-scrollbar">
         {navItems.map((item) => (
           <button
             key={item.id}
             onClick={() => setActiveTab(item.id)}
-            className={`flex flex-col items-center gap-0.5 px-2 py-2 rounded-lg transition-all min-w-0 flex-1 ${
+            className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all flex-shrink-0 min-w-[70px] ${
               activeTab === item.id
                 ? "text-[var(--gold)]"
                 : "text-neutral-600 hover:text-neutral-400"
@@ -1662,8 +1662,8 @@ export default function AdminPanel() {
             <span className={`transition-transform ${activeTab === item.id ? "scale-110" : ""}`}>
               {item.icon}
             </span>
-            <span className="text-[9px] font-bold uppercase tracking-wide leading-tight text-center truncate w-full">
-              {item.label.split(" ")[0]}
+            <span className="text-[9px] font-bold uppercase tracking-wide leading-tight text-center truncate w-full whitespace-normal">
+              {item.label}
             </span>
             {activeTab === item.id && (
               <span className="w-1 h-1 rounded-full bg-[var(--gold)] mt-0.5" />
@@ -1672,7 +1672,7 @@ export default function AdminPanel() {
         ))}
         <Link
           href="/"
-          className="flex flex-col items-center gap-0.5 px-2 py-2 rounded-lg transition-all min-w-0 flex-1 text-neutral-600 hover:text-neutral-400"
+          className="flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all flex-shrink-0 min-w-[70px] text-neutral-600 hover:text-neutral-400"
         >
           <ArrowLeft size={16} />
           <span className="text-[9px] font-bold uppercase tracking-wide">Back</span>
