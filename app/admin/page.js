@@ -225,6 +225,10 @@ export default function AdminPanel() {
         const updatedPortfolio = [...config.portfolio];
         updatedPortfolio[indexOrId] = { ...updatedPortfolio[indexOrId], coverUrl: url };
         setConfig({ ...config, portfolio: updatedPortfolio });
+      } else if (fieldType === "testimonial") {
+        const updatedTestimonials = [...(config.testimonials || [])];
+        updatedTestimonials[indexOrId] = { ...updatedTestimonials[indexOrId], imageUrl: url };
+        setConfig({ ...config, testimonials: updatedTestimonials });
       }
 
       toast.success("Image uploaded! Click Publish Settings to go live.");
@@ -814,7 +818,7 @@ export default function AdminPanel() {
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 h-full p-6 md:p-12 overflow-y-auto custom-scrollbar relative z-20">
+      <main className="flex-1 min-h-0 p-6 md:p-12 overflow-y-auto custom-scrollbar relative z-20">
         <div className="max-w-5xl mx-auto pb-20">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-10">
           <div>
@@ -1362,6 +1366,33 @@ export default function AdminPanel() {
                       <div className="col-span-1 md:col-span-2">
                         <label className="block text-[13px] font-mono text-[var(--muted)] mb-1 uppercase">Review Text</label>
                         <textarea value={t.text || ""} onChange={(e) => handleTestimonialChange(index, "text", e.target.value)} className="w-full bg-neutral-900/50 border border-neutral-800 rounded p-3 text-sm text-[var(--text)] min-h-[100px] leading-relaxed" />
+                      </div>
+                      <div className="col-span-1 md:col-span-2 border-t border-neutral-900 pt-4 mt-2">
+                        <label className="block text-[13px] font-mono text-[var(--muted)] mb-2 uppercase">Client Photo (URL or Upload)</label>
+                        <div className="flex items-center gap-4">
+                          {t.imageUrl ? (
+                            <img src={t.imageUrl} alt="Client" className="w-12 h-12 rounded-full object-cover border border-neutral-700" />
+                          ) : (
+                            <div className="w-12 h-12 rounded-full bg-neutral-900 flex items-center justify-center border border-neutral-800 text-neutral-600 text-xs font-mono font-bold">
+                              {t.client ? t.client.charAt(0).toUpperCase() : "?"}
+                            </div>
+                          )}
+                          <input type="text" value={t.imageUrl || ""} onChange={(e) => handleTestimonialChange(index, "imageUrl", e.target.value)} placeholder="Paste image URL here" className="flex-1 bg-[#070708] border border-neutral-900 rounded-lg p-3 text-sm text-[var(--text)] focus:outline-none" />
+                          <label className={`cursor-pointer px-4 py-3 rounded-lg text-xs font-bold uppercase tracking-wider text-center shrink-0 flex items-center justify-center transition-colors border ${uploadingField === `testimonial-${index}` ? 'bg-neutral-900 text-[var(--muted)] border-neutral-800' : 'bg-neutral-900 border-neutral-800 hover:border-neutral-700 text-white'}`}>
+                            {uploadingField === `testimonial-${index}` ? "Wait..." : "Upload"}
+                            <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, "testimonial", index)} disabled={uploadingField === `testimonial-${index}`} />
+                          </label>
+                          {t.imageUrl && t.imageUrl.includes('cloudinary') && (
+                            <button 
+                              type="button"
+                              onClick={() => handleDeleteMedia(t.imageUrl, () => handleTestimonialChange(index, "imageUrl", ""))}
+                              className="px-3 py-3 bg-red-950/30 border border-red-900/50 hover:bg-red-900/50 hover:border-red-500 text-red-500 rounded-lg flex items-center justify-center transition-colors"
+                              title="Delete from Cloudinary"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
