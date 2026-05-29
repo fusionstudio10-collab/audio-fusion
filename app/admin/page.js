@@ -761,7 +761,7 @@ export default function AdminPanel() {
   }
 
   return (
-    <div className="min-h-screen bg-[#070708] text-[#f3f3f0] font-[family-name:var(--font-syne)] flex flex-col md:flex-row relative pb-16 md:pb-0 md:h-screen md:overflow-hidden">
+    <div className="h-screen w-screen bg-[#070708] text-[#f3f3f0] font-[family-name:var(--font-syne)] flex flex-col md:flex-row relative overflow-hidden">
       <div className="film-grain" />
 
       {/* Sidebar navigation – DESKTOP ONLY */}
