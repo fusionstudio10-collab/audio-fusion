@@ -767,7 +767,7 @@ export default function AdminPanel() {
   }
 
   return (
-    <div className="h-screen w-screen bg-[#070708] text-[#f3f3f0] font-[family-name:var(--font-syne)] flex flex-col md:flex-row relative overflow-hidden">
+    <div className="min-h-screen md:h-screen w-screen bg-[#070708] text-[#f3f3f0] font-[family-name:var(--font-syne)] flex flex-col md:flex-row relative md:overflow-hidden">
       <div className="film-grain" />
 
       {/* Sidebar navigation – DESKTOP ONLY */}
@@ -818,7 +818,7 @@ export default function AdminPanel() {
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 min-h-0 p-6 md:p-12 overflow-y-auto custom-scrollbar relative z-20">
+      <main className="flex-1 p-6 md:p-12 overflow-y-visible md:overflow-y-auto custom-scrollbar relative z-20">
         <div className="max-w-5xl mx-auto pb-20">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-10">
           <div>
