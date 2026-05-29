@@ -23,7 +23,8 @@ import {
   Video,
   Tag,
   GripVertical,
-  Image as ImageIcon
+  Image as ImageIcon,
+  MessageSquare
 } from "lucide-react";
 import { defaultConfig } from "../lib/defaultConfig";
 import { toast } from "../../components/Toast";
@@ -692,6 +693,7 @@ export default function AdminPanel() {
     { id: "posters", icon: <ImageIcon size={16} />, label: "Posters & Thumbnails" },
     { id: "services", icon: <FileText size={16} />, label: "Services Pricing" },
     { id: "promotions", icon: <Tag size={16} />, label: "Promotions & Offers" },
+    { id: "testimonials", icon: <MessageSquare size={16} />, label: "Client Reviews" },
   ];
 
   if (!config) return <div className="min-h-screen bg-[#070708] flex items-center justify-center text-sm font-mono text-[var(--gold)]">INITIALIZING ENGINE CONFIG...</div>;
