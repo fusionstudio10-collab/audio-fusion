@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Play, X } from "lucide-react";
 import audioEngine from "../app/lib/audioEngine";
 
@@ -59,6 +60,15 @@ function TiltCard({ children }) {
 export default function YoutubeShowcase({ videos = [], layout = "grid" }) {
   const [activeVideoId, setActiveVideoId] = useState(null);
   const [activeFilter, setActiveFilter] = useState("All");
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsMounted(true);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
+
 
   useEffect(() => {
     if (activeVideoId) {
@@ -177,11 +187,11 @@ export default function YoutubeShowcase({ videos = [], layout = "grid" }) {
       </div>
 
       {/* VIDEO MODAL */}
-      {activeVideoId && (
+      {isMounted && activeVideoId && createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/95 backdrop-blur-md p-4 sm:p-10 animate-[fadeIn_0.3s_ease_forwards]">
           <button 
             onClick={closeVideo}
-            className="absolute top-6 right-6 p-2 rounded-full bg-white/10 text-white hover:bg-[#ff0000] transition-colors z-50"
+            className="absolute top-6 right-6 p-2 rounded-full bg-white/10 text-white hover:bg-[#ff0000] transition-colors z-[10000]"
           >
             <X className="w-6 h-6" />
           </button>
@@ -198,7 +208,8 @@ export default function YoutubeShowcase({ videos = [], layout = "grid" }) {
               className="w-full h-full"
             />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </section>
   );
