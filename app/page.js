@@ -496,12 +496,39 @@ export default function Home() {
                   <h2 className="font-[family-name:var(--font-playfair)] italic text-3xl sm:text-4xl md:text-6xl font-black mb-8 sm:mb-12 leading-tight text-white">{customSec.title}</h2>
                   {customSec.content && <p className="font-sans text-base sm:text-lg text-[var(--muted)] mb-8 sm:mb-12 leading-relaxed max-w-3xl">{customSec.content}</p>}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-                    {customSec.items?.map((item, idx) => (
-                      <div key={idx} className="p-6 sm:p-8 glass-card border border-neutral-900/60 rounded-2xl space-y-4 hover:border-[var(--gold)]/30 hover:-translate-y-1.5 hover:shadow-[0_15px_30px_rgba(197,160,89,0.03)] transition-all duration-500 ease-out">
-                        <h3 className="font-[family-name:var(--font-playfair)] italic text-xl sm:text-2xl font-bold text-white">{item.title}</h3>
-                        <p className="font-sans text-sm sm:text-base text-[var(--muted)] leading-relaxed">{item.desc}</p>
-                      </div>
-                    ))}
+                    {customSec.items?.map((item, idx) => {
+                      const hasLink = item.showInquire || item.link;
+                      const linkUrl = item.showInquire
+                        ? `https://wa.me/91${(config.whatsappNumber || "7738882899").replace(/\D/g, "")}?text=${encodeURIComponent(`Hi! I want to inquire about *${item.title}* from your website.`)}`
+                        : item.link;
+
+                      return (
+                        <div 
+                          key={idx} 
+                          data-cursor={!hasLink ? "" : undefined}
+                          data-cursor-text={!hasLink ? "VIEW" : undefined}
+                          className="p-6 sm:p-8 glass-card border border-neutral-900/60 rounded-2xl flex flex-col justify-between hover:border-[var(--gold)]/30 hover:-translate-y-1.5 hover:shadow-[0_15px_30px_rgba(197,160,89,0.03)] transition-all duration-500 ease-out h-full min-h-[220px]"
+                        >
+                          <div className="space-y-4 mb-6">
+                            <h3 className="font-[family-name:var(--font-playfair)] italic text-xl sm:text-2xl font-bold text-white">{item.title}</h3>
+                            <p className="font-sans text-sm sm:text-base text-[var(--muted)] leading-relaxed whitespace-pre-line">{item.desc}</p>
+                          </div>
+                          
+                          {hasLink && (
+                            <a
+                              href={linkUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              data-cursor
+                              data-cursor-text={item.buttonText || "INQUIRE"}
+                              className="w-full mt-auto py-3 bg-[var(--bg)] border border-neutral-800 rounded text-[11px] font-[family-name:var(--font-syne)] font-bold tracking-[2px] uppercase hover:bg-[var(--text)] hover:text-black hover:border-transparent transition-all duration-300 cursor-pointer text-center block relative z-20 pointer-events-auto"
+                            >
+                              {item.buttonText || "Inquire"}
+                            </a>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </section>
               );
@@ -515,12 +542,39 @@ export default function Home() {
                       <p className="font-sans text-base sm:text-lg md:text-xl text-[var(--muted)] leading-relaxed whitespace-pre-line">{customSec.content}</p>
                     </div>
                     <div className="lg:col-span-5 space-y-4">
-                      {customSec.items?.map((item, idx) => (
-                        <div key={idx} className="p-5 sm:p-6 bg-neutral-950/20 border border-neutral-900/50 rounded-xl hover:border-[var(--gold)]/30 hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(0,0,0,0.4)] transition-all duration-500 ease-out">
-                          <h4 className="font-bold text-xs uppercase text-[var(--gold)] tracking-wider mb-2">{item.title}</h4>
-                          <p className="text-xs text-[var(--muted)] leading-relaxed">{item.desc}</p>
-                        </div>
-                      ))}
+                      {customSec.items?.map((item, idx) => {
+                        const hasLink = item.showInquire || item.link;
+                        const linkUrl = item.showInquire
+                          ? `https://wa.me/91${(config.whatsappNumber || "7738882899").replace(/\D/g, "")}?text=${encodeURIComponent(`Hi! I want to inquire about *${item.title}* from your website.`)}`
+                          : item.link;
+
+                        return (
+                          <div 
+                            key={idx} 
+                            data-cursor={!hasLink ? "" : undefined}
+                            data-cursor-text={!hasLink ? "VIEW" : undefined}
+                            className="p-5 sm:p-6 bg-neutral-950/20 border border-neutral-900/50 rounded-xl flex flex-col justify-between hover:border-[var(--gold)]/30 hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(0,0,0,0.4)] transition-all duration-500 ease-out"
+                          >
+                            <div className="mb-3">
+                              <h4 className="font-bold text-xs uppercase text-[var(--gold)] tracking-wider mb-2">{item.title}</h4>
+                              <p className="text-xs text-[var(--muted)] leading-relaxed">{item.desc}</p>
+                            </div>
+                            
+                            {hasLink && (
+                              <a
+                                href={linkUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                data-cursor
+                                data-cursor-text={item.buttonText || "INQUIRE"}
+                                className="w-full mt-2 py-2 bg-[var(--bg)] border border-neutral-800 rounded text-[9px] font-[family-name:var(--font-syne)] font-bold tracking-[1.5px] uppercase hover:bg-[var(--text)] hover:text-black hover:border-transparent transition-all duration-300 cursor-pointer text-center block relative z-20 pointer-events-auto"
+                              >
+                                {item.buttonText || "Inquire"}
+                              </a>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </section>

@@ -1115,6 +1115,26 @@ export default function AdminPanel() {
                                   <label className="block text-[7px] font-mono text-[var(--muted)] mb-1 uppercase">Item Description</label>
                                   <textarea rows="2" value={item.desc} onChange={(e) => handleCustomItemChange(sec.id, itemIdx, "desc", e.target.value)} className="w-full bg-[#070708] border border-neutral-950 rounded p-1.5 text-sm text-[var(--text)]" />
                                 </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div>
+                                    <label className="block text-[7px] font-mono text-[var(--muted)] mb-1 uppercase">Button Text</label>
+                                    <input type="text" placeholder="Inquire" value={item.buttonText || ""} onChange={(e) => handleCustomItemChange(sec.id, itemIdx, "buttonText", e.target.value)} className="w-full bg-[#070708] border border-neutral-950 rounded p-1.5 text-xs text-[var(--text)]" />
+                                  </div>
+                                  <div>
+                                    <label className="block text-[7px] font-mono text-[var(--muted)] mb-1 uppercase">Button Link</label>
+                                    <input type="text" placeholder="https://..." value={item.link || ""} onChange={(e) => handleCustomItemChange(sec.id, itemIdx, "link", e.target.value)} className="w-full bg-[#070708] border border-neutral-950 rounded p-1.5 text-xs text-[var(--text)]" />
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2 pt-1">
+                                  <input 
+                                    type="checkbox" 
+                                    id={`inquire-${sec.id}-${itemIdx}`} 
+                                    checked={item.showInquire || false} 
+                                    onChange={(e) => handleCustomItemChange(sec.id, itemIdx, "showInquire", e.target.checked)} 
+                                    className="rounded border-neutral-950 bg-[#070708] text-[var(--gold)] focus:ring-0 cursor-pointer" 
+                                  />
+                                  <label htmlFor={`inquire-${sec.id}-${itemIdx}`} className="text-[9px] font-mono text-[var(--muted)] uppercase cursor-pointer select-none">Enable WhatsApp Inquire</label>
+                                </div>
                               </div>
                             ))}
                           </div>
