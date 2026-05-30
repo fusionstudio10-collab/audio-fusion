@@ -497,7 +497,7 @@ export default function Home() {
                   {customSec.content && <p className="font-sans text-base sm:text-lg text-[var(--muted)] mb-8 sm:mb-12 leading-relaxed max-w-3xl">{customSec.content}</p>}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
                     {customSec.items?.map((item, idx) => (
-                      <div key={idx} className="p-6 sm:p-8 glass-card border border-neutral-900/60 rounded-2xl space-y-4 hover:border-[var(--gold)]/25 transition-all duration-300">
+                      <div key={idx} className="p-6 sm:p-8 glass-card border border-neutral-900/60 rounded-2xl space-y-4 hover:border-[var(--gold)]/30 hover:-translate-y-1.5 hover:shadow-[0_15px_30px_rgba(197,160,89,0.03)] transition-all duration-500 ease-out">
                         <h3 className="font-[family-name:var(--font-playfair)] italic text-xl sm:text-2xl font-bold text-white">{item.title}</h3>
                         <p className="font-sans text-sm sm:text-base text-[var(--muted)] leading-relaxed">{item.desc}</p>
                       </div>
@@ -516,7 +516,7 @@ export default function Home() {
                     </div>
                     <div className="lg:col-span-5 space-y-4">
                       {customSec.items?.map((item, idx) => (
-                        <div key={idx} className="p-5 sm:p-6 bg-neutral-950/20 border border-neutral-900/50 rounded-xl hover:border-[var(--gold)]/20 transition-colors">
+                        <div key={idx} className="p-5 sm:p-6 bg-neutral-950/20 border border-neutral-900/50 rounded-xl hover:border-[var(--gold)]/30 hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(0,0,0,0.4)] transition-all duration-500 ease-out">
                           <h4 className="font-bold text-xs uppercase text-[var(--gold)] tracking-wider mb-2">{item.title}</h4>
                           <p className="text-xs text-[var(--muted)] leading-relaxed">{item.desc}</p>
                         </div>
