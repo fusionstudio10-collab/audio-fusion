@@ -81,6 +81,67 @@ const compressImage = (file, maxDimension = 1920, quality = 0.82) => {
   });
 };
 
+const getCleanEmbedMapUrl = (input) => {
+  if (!input) return "";
+  let text = input.trim();
+
+  // Case 1: If it's an iframe embed code (e.g. <iframe src="...">)
+  if (text.includes("<iframe")) {
+    const match = text.match(/src="([^"]+)"/);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+
+  // Case 2: Already a valid embed URL
+  if (text.includes("google.com/maps/embed") || (text.includes("maps.google.com/maps") && text.includes("output=embed"))) {
+    return text;
+  }
+
+  // Case 3: Standard google maps place URL
+  // Example: https://www.google.com/maps/place/Audio+Fusion+Studio/@19.0707,72.8459,17z/data=...
+  if (text.includes("google.com/maps/place/")) {
+    const parts = text.split("google.com/maps/place/");
+    if (parts[1]) {
+      const placePart = parts[1].split("/@")[0];
+      if (placePart) {
+        const cleanQuery = decodeURIComponent(placePart.replace(/\+/g, " "));
+        return `https://maps.google.com/maps?q=${encodeURIComponent(cleanQuery)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+      }
+    }
+  }
+
+  // Case 4: Standard search/coordinates URL
+  // Example: https://www.google.com/maps?q=19.0707,72.8459
+  if (text.includes("google.com/maps") && (text.includes("?q=") || text.includes("&q="))) {
+    try {
+      const urlObj = new URL(text);
+      const q = urlObj.searchParams.get("q");
+      if (q) {
+        return `https://maps.google.com/maps?q=${encodeURIComponent(q)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+      }
+    } catch (e) {
+      console.warn("Error parsing coordinates URL parameters:", e);
+    }
+  }
+
+  // Case 5: Coordinate query search fallback
+  // e.g. if URL contains coordinates after @, like /@19.0707,72.8459
+  if (text.includes("/@")) {
+    const coordsMatch = text.match(/\/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (coordsMatch && coordsMatch[1] && coordsMatch[2]) {
+      return `https://maps.google.com/maps?q=${coordsMatch[1]},${coordsMatch[2]}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+    }
+  }
+
+  // Case 6: If it is a coordinate string like "19.0707, 72.8459" or plain address query
+  if (text.length > 5 && !text.startsWith("http")) {
+    return `https://maps.google.com/maps?q=${encodeURIComponent(text)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+  }
+
+  return text;
+};
+
 function getYouTubeId(urlOrId) {
   if (!urlOrId) return "";
   let url = urlOrId.trim();
@@ -291,6 +352,39 @@ export default function AdminPanel() {
 
   const handleChange = (e) => {
     setConfig({ ...config, [e.target.name]: e.target.value });
+  };
+
+  const handleMapUrlChange = async (e) => {
+    const val = e.target.value;
+    setConfig((prev) => ({ ...prev, mapUrl: val }));
+
+    if (!val) return;
+
+    // Resolve short links from Google Maps share button (e.g. maps.app.goo.gl)
+    if (val.includes("maps.app.goo.gl") || val.includes("goo.gl/maps")) {
+      const toastId = toast.loading("Resolving Google Maps share link...");
+      try {
+        const res = await fetch(`/api/map?url=${encodeURIComponent(val)}`);
+        if (!res.ok) throw new Error("API error");
+        const { resolvedUrl } = await res.json();
+        
+        if (resolvedUrl) {
+          const cleanEmbed = getCleanEmbedMapUrl(resolvedUrl);
+          setConfig(prev => ({ ...prev, mapUrl: cleanEmbed }));
+          toast.success("Successfully converted share link to embed URL!", { id: toastId });
+        } else {
+          throw new Error("Could not resolve redirect");
+        }
+      } catch (err) {
+        console.error("Error resolving map url:", err);
+        const cleanEmbed = getCleanEmbedMapUrl(val);
+        setConfig(prev => ({ ...prev, mapUrl: cleanEmbed }));
+        toast.error("Failed to automatically resolve short link, using fallback conversion.", { id: toastId });
+      }
+    } else {
+      const cleanEmbed = getCleanEmbedMapUrl(val);
+      setConfig(prev => ({ ...prev, mapUrl: cleanEmbed }));
+    }
   };
 
   const handleImageUpload = async (e, fieldType, indexOrId = null) => {
@@ -1508,8 +1602,8 @@ export default function AdminPanel() {
                   <input type="text" name="address" value={config.address || ""} onChange={handleChange} className="w-full bg-[#070708] border border-neutral-900 rounded-lg p-3.5 text-sm text-[var(--text)] focus:outline-none focus:border-neutral-500 font-bold" />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-mono text-[var(--muted)] mb-2 uppercase tracking-widest">Google Map Embed Iframe URL</label>
-                  <input type="text" name="mapUrl" value={config.mapUrl || ""} onChange={handleChange} className="w-full bg-[#070708] border border-neutral-900 rounded-lg p-3.5 text-sm text-[var(--text)] focus:outline-none focus:border-neutral-500 font-mono" />
+                  <label className="block text-[11px] font-mono text-[var(--muted)] mb-2 uppercase tracking-widest">Google Map Share Link / Location / Embed Iframe</label>
+                  <input type="text" name="mapUrl" value={config.mapUrl || ""} onChange={handleMapUrlChange} placeholder="Paste standard Maps URL, short share link, coordinates, or iframe code..." className="w-full bg-[#070708] border border-neutral-900 rounded-lg p-3.5 text-sm text-[var(--text)] focus:outline-none focus:border-neutral-500 font-mono" />
                 </div>
 
                 {/* Login Credentials Config */}
