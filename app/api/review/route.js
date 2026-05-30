@@ -11,7 +11,7 @@ const redis = new Redis({
 
 export async function POST(request) {
   try {
-    const { client, role, text, rating } = await request.json();
+    const { client, role, text, rating, imageUrl } = await request.json();
 
     if (!client || !role || !text) {
       return NextResponse.json({ error: "Required fields missing" }, { status: 400 });
@@ -34,7 +34,7 @@ export async function POST(request) {
       role: role.trim(),
       text: text.trim(),
       rating: Number(rating) || 5,
-      imageUrl: ""
+      imageUrl: imageUrl ? imageUrl.trim() : ""
     };
 
     // Prepend directly to testimonials list

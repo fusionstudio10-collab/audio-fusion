@@ -17,6 +17,57 @@ function StarRating({ count }) {
   );
 }
 
+// Client-side image compression utility
+const compressImage = (file, maxDimension = 800, quality = 0.8) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          } else {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+        
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                type: "image/jpeg",
+                lastModified: Date.now(),
+              });
+              resolve(compressedFile);
+            } else {
+              reject(new Error("Canvas blob conversion failed"));
+            }
+          },
+          "image/jpeg",
+          quality
+        );
+      };
+      img.onerror = (err) => reject(err);
+    };
+    reader.onerror = (err) => reject(err);
+  });
+};
+
 function SwipeCard({ item, active, index, onSwipe }) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -95,6 +146,11 @@ export default function TestimonialMarquee({ testimonials = [], layout = "marque
   const [rating, setRating] = useState(5);
   const [error, setError] = useState("");
 
+  // Review photo upload state variables
+  const [photoUrl, setPhotoUrl] = useState("");
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoError, setPhotoError] = useState("");
+
   if (!allTestimonials || allTestimonials.length === 0) return null;
 
   // Duplicate array for infinite marquee layout
@@ -102,6 +158,44 @@ export default function TestimonialMarquee({ testimonials = [], layout = "marque
 
   const handleSwipe = () => {
     setCurrentIndex((prev) => (prev + 1) % allTestimonials.length);
+  };
+
+  const handlePhotoChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setPhotoError("Please select a valid image file.");
+      return;
+    }
+
+    setUploadingPhoto(true);
+    setPhotoError("");
+    setPhotoUrl("");
+
+    try {
+      const compressed = await compressImage(file);
+      const formData = new FormData();
+      formData.append("file", compressed);
+      formData.append("folder", "audio-fusion/testimonials");
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setPhotoUrl(data.url);
+      } else {
+        setPhotoError("Failed to upload image. Please try again.");
+      }
+    } catch (err) {
+      setPhotoError("Failed to process image.");
+      console.error(err);
+    } finally {
+      setUploadingPhoto(false);
+    }
   };
 
   const handleSubmitReview = async (e) => {
@@ -122,7 +216,8 @@ export default function TestimonialMarquee({ testimonials = [], layout = "marque
           client: clientName,
           role: clientRole,
           text: reviewText,
-          rating
+          rating,
+          imageUrl: photoUrl
         })
       });
       
@@ -134,7 +229,7 @@ export default function TestimonialMarquee({ testimonials = [], layout = "marque
           role: clientRole.trim(),
           text: reviewText.trim(),
           rating: Number(rating) || 5,
-          imageUrl: ""
+          imageUrl: photoUrl
         };
         setNewTestimonials((prev) => [newReview, ...prev]);
 
@@ -142,6 +237,7 @@ export default function TestimonialMarquee({ testimonials = [], layout = "marque
         setClientRole("");
         setReviewText("");
         setRating(5);
+        setPhotoUrl("");
       } else {
         const data = await res.json();
         setError(data.error || "Failed to submit review. Please try again.");
@@ -272,7 +368,7 @@ export default function TestimonialMarquee({ testimonials = [], layout = "marque
           </a>
         )}
         <button
-          onClick={() => { setIsModalOpen(true); setSubmitted(false); setError(""); }}
+          onClick={() => { setIsModalOpen(true); setSubmitted(false); setError(""); setPhotoUrl(""); setPhotoError(""); }}
           className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-full font-mono text-[11px] tracking-widest uppercase bg-[var(--gold)] hover:bg-white text-black font-bold transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.4)] cursor-pointer"
         >
           <MessageSquare className="w-3.5 h-3.5" />
@@ -341,6 +437,40 @@ export default function TestimonialMarquee({ testimonials = [], layout = "marque
                     ))}
                   </div>
                 </div>
+
+                {/* Photo Upload */}
+                <div className="space-y-3 p-4 bg-neutral-900/20 border border-neutral-900 rounded-2xl">
+                  <label className="block text-[10px] font-mono text-[var(--muted)] uppercase tracking-wider font-bold">Your Photo (Optional)</label>
+                  <div className="flex items-center gap-4">
+                    {/* Preview circle */}
+                    <div className="w-14 h-14 rounded-full bg-[#070708] flex items-center justify-center border border-neutral-800 overflow-hidden shrink-0">
+                      {uploadingPhoto ? (
+                        <div className="w-4 h-4 border-2 border-[var(--gold)] border-t-transparent rounded-full animate-spin" />
+                      ) : photoUrl ? (
+                        <img src={photoUrl} alt="Preview" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-neutral-600 font-mono text-[9px] uppercase tracking-wider">Empty</span>
+                      )}
+                    </div>
+                    
+                    <div className="flex-1 space-y-1">
+                      <label className="cursor-pointer inline-flex items-center justify-center gap-2 px-4 py-2 border border-neutral-850 bg-[#070708] hover:bg-neutral-800 text-[10px] font-mono tracking-widest uppercase text-white transition-colors rounded-xl select-none">
+                        {photoUrl ? "Change Photo" : "Select Photo"}
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          onChange={handlePhotoChange} 
+                          className="hidden" 
+                          disabled={uploadingPhoto}
+                        />
+                      </label>
+                      <p className="text-[9px] text-[var(--muted)] italic">JPG/PNG. Resized & compressed automatically.</p>
+                    </div>
+                  </div>
+                  {photoError && (
+                    <p className="text-[10px] font-mono text-red-400 mt-1">{photoError}</p>
+                  )}
+                </div>
                 
                 <div className="space-y-4">
                   <div>
@@ -381,7 +511,7 @@ export default function TestimonialMarquee({ testimonials = [], layout = "marque
                 
                 <button
                   type="submit"
-                  disabled={submitting}
+                  disabled={submitting || uploadingPhoto}
                   className="w-full py-4 rounded-xl font-mono text-xs tracking-widest uppercase bg-[var(--gold)] text-black font-bold hover:bg-white transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {submitting ? "Submitting..." : "Submit Review"}
