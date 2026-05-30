@@ -1049,7 +1049,7 @@ export default function AdminPanel() {
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 p-6 md:p-12 overflow-y-visible md:overflow-y-auto custom-scrollbar relative z-20">
+      <main className="flex-1 p-6 pb-28 md:p-12 md:pb-12 overflow-y-visible md:overflow-y-auto custom-scrollbar relative z-20">
         <div className="max-w-5xl mx-auto pb-20">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-10">
           <div>
@@ -1405,22 +1405,24 @@ export default function AdminPanel() {
                 </div>
                 <div>
                   <label className="block text-[11px] font-mono text-[var(--muted)] mb-2 uppercase tracking-widest">Logo / Intro Screen Image</label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <input type="text" name="logoUrl" value={config.logoUrl || ""} onChange={handleChange} className="flex-1 bg-[#070708] border border-neutral-900 rounded-lg p-3.5 text-sm text-[var(--text)] focus:outline-none focus:border-neutral-500 font-mono" />
-                    <label className="px-4 py-3 bg-neutral-900 border border-neutral-800 hover:border-neutral-700 rounded-lg font-bold text-xs uppercase tracking-wider text-center cursor-pointer shrink-0 flex items-center justify-center transition-colors">
-                      {uploadingField === 'logo-global' ? 'Uploading...' : 'Upload'}
-                      <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'logo')} className="hidden" disabled={uploadingField === 'logo-global'} />
-                    </label>
-                    {config.logoUrl && config.logoUrl.includes('cloudinary') && (
-                      <button 
-                        type="button"
-                        onClick={() => handleDeleteMedia(config.logoUrl, () => setConfig({ ...config, logoUrl: "" }))}
-                        className="px-3 bg-red-950/30 border border-red-900/50 hover:bg-red-900/50 hover:border-red-500 text-red-500 rounded-lg flex items-center justify-center transition-colors"
-                        title="Delete from Cloudinary"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
+                    <div className="flex gap-2 w-full sm:w-auto">
+                      <label className="flex-1 sm:flex-none px-4 py-3 bg-neutral-900 border border-neutral-800 hover:border-neutral-700 rounded-lg font-bold text-xs uppercase tracking-wider text-center cursor-pointer shrink-0 flex items-center justify-center transition-colors">
+                        {uploadingField === 'logo-global' ? 'Uploading...' : 'Upload'}
+                        <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'logo')} className="hidden" disabled={uploadingField === 'logo-global'} />
+                      </label>
+                      {config.logoUrl && config.logoUrl.includes('cloudinary') && (
+                        <button 
+                          type="button"
+                          onClick={() => handleDeleteMedia(config.logoUrl, () => setConfig({ ...config, logoUrl: "" }))}
+                          className="px-3 py-3 bg-red-950/30 border border-red-900/50 hover:bg-red-900/50 hover:border-red-500 text-red-500 rounded-lg flex items-center justify-center transition-colors shrink-0"
+                          title="Delete from Cloudinary"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div>
@@ -1764,19 +1766,22 @@ export default function AdminPanel() {
                     </div>
                     <div className="col-span-1 md:col-span-2">
                       <label className="block text-[13px] font-mono text-[var(--muted)] mb-1 uppercase">Portrait Image</label>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <input type="text" value={f.photo} onChange={(e) => handleFounderChange(f.id, "photo", e.target.value)} className="flex-1 bg-[#070708] border border-neutral-900 rounded p-2 text-sm text-[var(--text)] font-mono" />
-                        <label className="px-3 py-2 bg-neutral-900 border border-neutral-800 hover:border-neutral-700 rounded font-bold text-[11px] uppercase tracking-wider text-center cursor-pointer shrink-0 flex items-center justify-center">
-                          {uploadingField === `founder-${f.id}` ? 'Uploading...' : 'Upload'}
-                          <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'founder', f.id)} className="hidden" disabled={uploadingField === `founder-${f.id}`} />
-                        </label>
-                        <button 
-                          onClick={() => handleDeleteMedia(f.photo, () => handleFounderChange(f.id, "photo", ""))} 
-                          className="px-3 py-2 bg-red-950/30 border border-red-900/50 hover:bg-red-900/50 text-red-500 rounded font-bold text-[11px] uppercase tracking-wider transition-colors shrink-0 flex items-center justify-center"
-                          title="Delete portrait"
-                        >
-                          Delete
-                        </button>
+                        <div className="flex gap-2 w-full sm:w-auto">
+                          <label className="flex-1 sm:flex-none px-3 py-2 bg-neutral-900 border border-neutral-800 hover:border-neutral-700 rounded font-bold text-[11px] uppercase tracking-wider text-center cursor-pointer shrink-0 flex items-center justify-center">
+                            {uploadingField === `founder-${f.id}` ? 'Uploading...' : 'Upload'}
+                            <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'founder', f.id)} className="hidden" disabled={uploadingField === `founder-${f.id}`} />
+                          </label>
+                          <button 
+                            type="button"
+                            onClick={() => handleDeleteMedia(f.photo, () => handleFounderChange(f.id, "photo", ""))} 
+                            className="flex-1 sm:flex-none px-3 py-2 bg-red-950/30 border border-red-900/50 hover:bg-red-900/50 text-red-500 rounded font-bold text-[11px] uppercase tracking-wider transition-colors shrink-0 flex items-center justify-center"
+                            title="Delete portrait"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </div>
                     </div>
                     <div className="col-span-1 md:col-span-2">
@@ -1830,19 +1835,22 @@ export default function AdminPanel() {
                       </div>
                       <div className="col-span-1 md:col-span-2">
                         <label className="block text-[13px] font-mono text-[var(--muted)] mb-1 uppercase">Cover Image</label>
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                           <input type="text" value={track.coverUrl} onChange={(e) => handlePortfolioChange(idx, "coverUrl", e.target.value)} className="flex-1 bg-[#070708] border border-neutral-900 rounded p-2 text-sm text-[var(--text)] font-mono" />
-                          <label className="px-3 py-2 bg-neutral-900 border border-neutral-800 hover:border-neutral-700 rounded font-bold text-[11px] uppercase tracking-wider text-center cursor-pointer shrink-0 flex items-center justify-center">
-                            {uploadingField === `showcase-${idx}` ? 'Uploading...' : 'Upload'}
-                            <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'showcase', idx)} className="hidden" disabled={uploadingField === `showcase-${idx}`} />
-                          </label>
-                          <button 
-                            onClick={() => handleDeleteMedia(track.coverUrl, () => handlePortfolioChange(idx, "coverUrl", ""))} 
-                            className="px-3 py-2 bg-red-950/30 border border-red-900/50 hover:bg-red-900/50 text-red-500 rounded font-bold text-[11px] uppercase tracking-wider transition-colors shrink-0 flex items-center justify-center"
-                            title="Delete cover"
-                          >
-                            Delete
-                          </button>
+                          <div className="flex gap-2 w-full sm:w-auto">
+                            <label className="flex-1 sm:flex-none px-3 py-2 bg-neutral-900 border border-neutral-800 hover:border-neutral-700 rounded font-bold text-[11px] uppercase tracking-wider text-center cursor-pointer shrink-0 flex items-center justify-center">
+                              {uploadingField === `showcase-${idx}` ? 'Uploading...' : 'Upload'}
+                              <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'showcase', idx)} className="hidden" disabled={uploadingField === `showcase-${idx}`} />
+                            </label>
+                            <button 
+                              type="button"
+                              onClick={() => handleDeleteMedia(track.coverUrl, () => handlePortfolioChange(idx, "coverUrl", ""))} 
+                              className="flex-1 sm:flex-none px-3 py-2 bg-red-950/30 border border-red-900/50 hover:bg-red-900/50 text-red-500 rounded font-bold text-[11px] uppercase tracking-wider transition-colors shrink-0 flex items-center justify-center"
+                              title="Delete cover"
+                            >
+                              Delete
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1910,22 +1918,24 @@ export default function AdminPanel() {
                         )}
                         <div className="flex-1">
                           <label className="block text-[13px] font-mono text-[var(--muted)] mb-1 uppercase">Image URL (Upload via button or paste)</label>
-                          <div className="flex gap-2">
-                            <input type="text" value={poster.imageUrl} onChange={(e) => handlePosterChange(index, "imageUrl", e.target.value)} className="w-full bg-neutral-900/50 border border-neutral-800 rounded p-3 text-sm text-[var(--text)]" />
-                            <label className="flex items-center justify-center px-4 bg-neutral-800 hover:bg-neutral-700 rounded cursor-pointer border border-neutral-700 text-xs uppercase font-bold transition-colors">
-                              {uploadingField === `poster-${index}` ? "Wait..." : "Upload"}
-                              <input type="file" className="hidden" accept="image/*" onChange={(e) => handlePosterUpload(e, index)} />
-                            </label>
-                            {poster.imageUrl && poster.imageUrl.includes('cloudinary') && (
-                              <button 
-                                type="button"
-                                onClick={() => handleDeleteMedia(poster.imageUrl, () => handlePosterChange(index, "imageUrl", ""))}
-                                className="px-3 bg-red-950/30 border border-red-900/50 hover:bg-red-900/50 hover:border-red-500 text-red-500 rounded flex items-center justify-center transition-colors"
-                                title="Delete image from Cloudinary"
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            )}
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <input type="text" value={poster.imageUrl} onChange={(e) => handlePosterChange(index, "imageUrl", e.target.value)} className="flex-1 bg-neutral-900/50 border border-neutral-800 rounded p-3 text-sm text-[var(--text)]" />
+                            <div className="flex gap-2 w-full sm:w-auto">
+                              <label className="flex-1 sm:flex-none flex items-center justify-center px-4 py-2 bg-neutral-800 hover:bg-neutral-700 rounded cursor-pointer border border-neutral-700 text-xs uppercase font-bold transition-colors">
+                                {uploadingField === `poster-${index}` ? "Wait..." : "Upload"}
+                                <input type="file" className="hidden" accept="image/*" onChange={(e) => handlePosterUpload(e, index)} />
+                              </label>
+                              {poster.imageUrl && poster.imageUrl.includes('cloudinary') && (
+                                <button 
+                                  type="button"
+                                  onClick={() => handleDeleteMedia(poster.imageUrl, () => handlePosterChange(index, "imageUrl", ""))}
+                                  className="px-3 py-2 bg-red-950/30 border border-red-900/50 hover:bg-red-900/50 hover:border-red-500 text-red-500 rounded flex items-center justify-center transition-colors shrink-0"
+                                  title="Delete image from Cloudinary"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -2028,29 +2038,33 @@ export default function AdminPanel() {
                       </div>
                       <div className="col-span-1 md:col-span-2 border-t border-neutral-900 pt-4 mt-2">
                         <label className="block text-[13px] font-mono text-[var(--muted)] mb-2 uppercase">Client Photo (URL or Upload)</label>
-                        <div className="flex items-center gap-4">
-                          {t.imageUrl ? (
-                            <img src={t.imageUrl} alt="Client" className="w-12 h-12 rounded-full object-cover border border-neutral-700" />
-                          ) : (
-                            <div className="w-12 h-12 rounded-full bg-neutral-900 flex items-center justify-center border border-neutral-800 text-neutral-600 text-xs font-mono font-bold">
-                              {t.client ? t.client.charAt(0).toUpperCase() : "?"}
-                            </div>
-                          )}
-                          <input type="text" value={t.imageUrl || ""} onChange={(e) => handleTestimonialChange(index, "imageUrl", e.target.value)} placeholder="Paste image URL here" className="flex-1 bg-[#070708] border border-neutral-900 rounded-lg p-3 text-sm text-[var(--text)] focus:outline-none" />
-                          <label className={`cursor-pointer px-4 py-3 rounded-lg text-xs font-bold uppercase tracking-wider text-center shrink-0 flex items-center justify-center transition-colors border ${uploadingField === `testimonial-${index}` ? 'bg-neutral-900 text-[var(--muted)] border-neutral-800' : 'bg-neutral-900 border-neutral-800 hover:border-neutral-700 text-white'}`}>
-                            {uploadingField === `testimonial-${index}` ? "Wait..." : "Upload"}
-                            <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, "testimonial", index)} disabled={uploadingField === `testimonial-${index}`} />
-                          </label>
-                          {t.imageUrl && t.imageUrl.includes('cloudinary') && (
-                            <button 
-                              type="button"
-                              onClick={() => handleDeleteMedia(t.imageUrl, () => handleTestimonialChange(index, "imageUrl", ""))}
-                              className="px-3 py-3 bg-red-950/30 border border-red-900/50 hover:bg-red-900/50 hover:border-red-500 text-red-500 rounded-lg flex items-center justify-center transition-colors"
-                              title="Delete from Cloudinary"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          )}
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                          <div className="flex items-center gap-3 w-full sm:w-auto">
+                            {t.imageUrl ? (
+                              <img src={t.imageUrl} alt="Client" className="w-12 h-12 rounded-full object-cover border border-neutral-700 shrink-0" />
+                            ) : (
+                              <div className="w-12 h-12 rounded-full bg-neutral-900 flex items-center justify-center border border-neutral-800 text-neutral-600 text-xs font-mono font-bold shrink-0">
+                                {t.client ? t.client.charAt(0).toUpperCase() : "?"}
+                              </div>
+                            )}
+                            <input type="text" value={t.imageUrl || ""} onChange={(e) => handleTestimonialChange(index, "imageUrl", e.target.value)} placeholder="Paste image URL here" className="flex-1 bg-[#070708] border border-neutral-900 rounded-lg p-3 text-sm text-[var(--text)] focus:outline-none" />
+                          </div>
+                          <div className="flex gap-2 w-full sm:w-auto self-stretch sm:self-auto justify-end">
+                            <label className={`cursor-pointer px-4 py-3 rounded-lg text-xs font-bold uppercase tracking-wider text-center flex-1 sm:flex-none flex items-center justify-center transition-colors border ${uploadingField === `testimonial-${index}` ? 'bg-neutral-900 text-[var(--muted)] border-neutral-800' : 'bg-neutral-900 border-neutral-800 hover:border-neutral-700 text-white'}`}>
+                              {uploadingField === `testimonial-${index}` ? "Wait..." : "Upload"}
+                              <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, "testimonial", index)} disabled={uploadingField === `testimonial-${index}`} />
+                            </label>
+                            {t.imageUrl && t.imageUrl.includes('cloudinary') && (
+                              <button 
+                                type="button"
+                                onClick={() => handleDeleteMedia(t.imageUrl, () => handleTestimonialChange(index, "imageUrl", ""))}
+                                className="px-3 py-3 bg-red-950/30 border border-red-900/50 hover:bg-red-900/50 hover:border-red-500 text-red-500 rounded-lg flex items-center justify-center transition-colors shrink-0"
+                                title="Delete from Cloudinary"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -2445,7 +2459,7 @@ export default function AdminPanel() {
             <span className={`transition-transform ${activeTab === item.id ? "scale-110" : ""}`}>
               {item.icon}
             </span>
-            <span className="text-[9px] font-bold uppercase tracking-wide leading-tight text-center truncate w-full whitespace-normal">
+            <span className="text-[9px] font-bold uppercase tracking-wider leading-tight text-center whitespace-nowrap">
               {item.label}
             </span>
             {activeTab === item.id && (
