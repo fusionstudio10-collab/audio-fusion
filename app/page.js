@@ -392,16 +392,12 @@ export default function Home() {
             --muted: ${config.theme.muted || "#8e8b82"};
             --border: color-mix(in srgb, var(--gold) 8%, transparent);
           }
+          html {
+            scroll-padding-top: ${config.globalDiscount?.active && hasEntered ? "116px" : "80px"};
+          }
         `}} />
       )}
 
-
-      {/* GLOBAL PROMO BANNER */}
-      {config.globalDiscount?.active && hasEntered && (
-        <div className="fixed top-0 left-0 right-0 z-[100] bg-[var(--gold)] text-[#070708] py-2 px-4 text-center font-[family-name:var(--font-syne)] text-[10px] sm:text-xs font-bold tracking-[2px] uppercase flex justify-center items-center gap-3">
-          <span>{config.globalDiscount.bannerText}</span>
-        </div>
-      )}
 
       {/* BACKGROUND EFFECTS */}
       <div className="film-grain" />
@@ -421,71 +417,82 @@ export default function Home() {
         />
       )}
 
-      {/* ── NAVBAR ─────────────────────────────────────── */}
-      <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-500 bg-[#070708]/40 backdrop-blur-md border-b border-neutral-900/40 ${
+      {/* ── HEADER WRAPPER ─────────────────────────────────── */}
+      <div
+        className={`fixed top-0 left-0 right-0 z-50 flex flex-col transition-transform duration-500 ${
           scrolledDown ? "-translate-y-full" : "translate-y-0"
         }`}
       >
-        <div className="flex items-center justify-between py-4 px-5 sm:px-8 md:px-16">
-          {/* Logo */}
-          <a
-            href="#"
-            onClick={handleNavClick}
-            className="flex items-center gap-2.5 font-[family-name:var(--font-playfair)] italic text-lg sm:text-xl md:text-2xl font-black text-[var(--text)] tracking-tight hover:text-white transition-colors"
-          >
-            <img
-              src={config.logoUrl || "/logo.jpg"}
-              alt={config.name}
-              className="w-9 h-9 sm:w-10 sm:h-10 object-contain logo-gold-invert shrink-0"
-            />
-            <span className="hidden sm:inline">{config.name}</span>
-          </a>
-
-          {/* Desktop nav links */}
-          <ul className="hidden md:flex gap-8 lg:gap-10 items-center list-none text-[10px] font-[family-name:var(--font-syne)] font-bold tracking-[3px] uppercase">
-            {navLinks.map((l) => (
-              <li key={l.id}>
-                <a href={`#${l.id}`} onClick={handleNavClick} className="text-[var(--muted)] hover:text-[var(--text)] transition-colors hover-underline">
-                  {l.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-
-          {/* Mobile: Hamburger */}
-          <div className="flex md:hidden items-center gap-3">
-            <button
-              onClick={() => { audioEngine.playClick(); setMobileMenuOpen(!mobileMenuOpen); }}
-              className="p-1.5 text-[var(--muted)] hover:text-white transition-colors"
-              aria-label="Toggle menu"
-            >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
+        {/* GLOBAL PROMO BANNER */}
+        {config.globalDiscount?.active && hasEntered && (
+          <div className="bg-[var(--gold)] text-[#070708] py-2 px-4 text-center font-[family-name:var(--font-syne)] text-[10px] sm:text-xs font-bold tracking-[2px] uppercase flex justify-center items-center gap-3 w-full shrink-0">
+            <span>{config.globalDiscount.bannerText}</span>
           </div>
-        </div>
+        )}
 
-        {/* Mobile Dropdown Menu */}
-        <div
-          className={`md:hidden overflow-hidden transition-all duration-300 ease-out ${
-            mobileMenuOpen ? "max-h-64 border-t border-neutral-900/60" : "max-h-0"
-          }`}
+        <nav
+          className="w-full bg-[#070708]/40 backdrop-blur-md border-b border-neutral-900/40"
         >
-          <ul className="flex flex-col px-5 py-3 gap-1 bg-[#070708]/60 backdrop-blur-md">
-            {navLinks.map((l) => (
-              <li key={l.id}>
-                <a
-                  href={`#${l.id}`}
-                  onClick={handleNavClick}
-                  className="block py-3 text-[11px] font-bold tracking-[3px] uppercase text-[var(--muted)] hover:text-white transition-colors border-b border-neutral-900/40 last:border-0"
-                >
-                  {l.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </nav>
+          <div className="flex items-center justify-between py-4 px-5 sm:px-8 md:px-16">
+            {/* Logo */}
+            <a
+              href="#"
+              onClick={handleNavClick}
+              className="flex items-center gap-2.5 font-[family-name:var(--font-playfair)] italic text-lg sm:text-xl md:text-2xl font-black text-[var(--text)] tracking-tight hover:text-white transition-colors"
+            >
+              <img
+                src={config.logoUrl || "/logo.jpg"}
+                alt={config.name}
+                className="w-9 h-9 sm:w-10 sm:h-10 object-contain logo-gold-invert shrink-0"
+              />
+              <span className="hidden sm:inline">{config.name}</span>
+            </a>
+
+            {/* Desktop nav links */}
+            <ul className="hidden md:flex gap-8 lg:gap-10 items-center list-none text-[10px] font-[family-name:var(--font-syne)] font-bold tracking-[3px] uppercase">
+              {navLinks.map((l) => (
+                <li key={l.id}>
+                  <a href={`#${l.id}`} onClick={handleNavClick} className="text-[var(--muted)] hover:text-[var(--text)] transition-colors hover-underline">
+                    {l.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+
+            {/* Mobile: Hamburger */}
+            <div className="flex md:hidden items-center gap-3">
+              <button
+                onClick={() => { audioEngine.playClick(); setMobileMenuOpen(!mobileMenuOpen); }}
+                className="p-1.5 text-[var(--muted)] hover:text-white transition-colors"
+                aria-label="Toggle menu"
+              >
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile Dropdown Menu */}
+          <div
+            className={`md:hidden overflow-hidden transition-all duration-300 ease-out ${
+              mobileMenuOpen ? "max-h-64 border-t border-neutral-900/60" : "max-h-0"
+            }`}
+          >
+            <ul className="flex flex-col px-5 py-3 gap-1 bg-[#070708]/60 backdrop-blur-md">
+              {navLinks.map((l) => (
+                <li key={l.id}>
+                  <a
+                    href={`#${l.id}`}
+                    onClick={handleNavClick}
+                    className="block py-3 text-[11px] font-bold tracking-[3px] uppercase text-[var(--muted)] hover:text-white transition-colors border-b border-neutral-900/40 last:border-0"
+                  >
+                    {l.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </nav>
+      </div>
 
       {/* ── MAIN CONTENT ────────────────────────────────── */}
       <main className={`transition-all duration-1000 ${hasEntered ? "opacity-100 filter-none" : "opacity-0 blur-md pointer-events-none"}`}>
@@ -496,7 +503,7 @@ export default function Home() {
           // ── HERO ──────────────────────────────────────────
           if (sectionId === "hero") {
             sectionContent = (
-              <section key="hero" id="hero" className="min-h-[100svh] flex flex-col justify-end px-4 sm:px-8 md:px-16 pb-12 sm:pb-24 relative overflow-hidden pt-20">
+              <section key="hero" id="hero" className={`min-h-[100svh] flex flex-col justify-end px-4 sm:px-8 md:px-16 pb-12 sm:pb-24 relative overflow-hidden transition-all ${config.globalDiscount?.active && hasEntered ? "pt-32" : "pt-24"}`}>
                 <InteractiveVisualizer isPlaying={isPlayingTrack} />
 
                 {/* Hero intro — top right on desktop, center on mobile */}
@@ -632,7 +639,7 @@ export default function Home() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row justify-center items-center border-t border-neutral-900/60 pt-8 text-[9px] font-mono tracking-widest text-[var(--muted)] uppercase gap-3">
-                  <p>© 2026 {config.name} Studio. All Rights Reserved.</p>
+                  <p>© 2026 {config.name}. All Rights Reserved.</p>
                 </div>
               </footer>
             );

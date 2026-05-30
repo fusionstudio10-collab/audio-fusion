@@ -296,5 +296,6 @@ export const defaultConfig = {
       "role": "Singer-Songwriter",
       "text": "From vocal tuning to the final master, everything was flawless. A design-led audio approach is rare, and it shows in the final product."
     }
-  ]
+  ],
+  "pendingReviews": []
 };

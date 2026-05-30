@@ -26,7 +26,10 @@ import {
   Image as ImageIcon,
   MessageSquare,
   Palette,
-  Globe
+  Globe,
+  Check,
+  Star,
+  X
 } from "lucide-react";
 import { defaultConfig } from "../lib/defaultConfig";
 import { toast } from "../../components/Toast";
@@ -703,6 +706,44 @@ export default function AdminPanel() {
   const removeTestimonial = (index) => {
     const updated = (config.testimonials || []).filter((_, idx) => idx !== index);
     setConfig({ ...config, testimonials: updated });
+  };
+
+  const approveReview = (reviewId) => {
+    const reviewToApprove = (config.pendingReviews || []).find(r => r.id === reviewId);
+    if (!reviewToApprove) return;
+    
+    const updatedTestimonials = [
+      {
+        client: reviewToApprove.client,
+        role: reviewToApprove.role,
+        text: reviewToApprove.text,
+        rating: reviewToApprove.rating,
+        imageUrl: reviewToApprove.imageUrl || ""
+      },
+      ...(config.testimonials || [])
+    ];
+    
+    const updatedPending = (config.pendingReviews || []).filter(r => r.id !== reviewId);
+    
+    setConfig({
+      ...config,
+      testimonials: updatedTestimonials,
+      pendingReviews: updatedPending
+    });
+    toast.success(`Approved review from ${reviewToApprove.client}! Publish to save changes.`);
+  };
+
+  const rejectReview = (reviewId) => {
+    const reviewToReject = (config.pendingReviews || []).find(r => r.id === reviewId);
+    if (!reviewToReject) return;
+    
+    const updatedPending = (config.pendingReviews || []).filter(r => r.id !== reviewId);
+    
+    setConfig({
+      ...config,
+      pendingReviews: updatedPending
+    });
+    toast.success(`Rejected review from ${reviewToReject.client}. Publish to save changes.`);
   };
 
   // --- POSTERS HANDLERS ---
@@ -2181,7 +2222,74 @@ export default function AdminPanel() {
                   Add your business review page link from Google Maps / Google Business. A prominent &quot;Write a Review on Google&quot; button will display on your website reviews section.
                 </p>
               </div>
-              <div className="flex items-center justify-between pb-6 border-b border-neutral-900">
+              {/* PENDING REVIEWS QUEUE */}
+              <div className="p-6 border border-dashed border-neutral-800 rounded-xl bg-neutral-950/20 space-y-6">
+                <div className="flex items-center justify-between pb-3 border-b border-neutral-900">
+                  <h3 className="font-mono text-sm tracking-[3px] text-[var(--gold)] uppercase font-bold flex items-center gap-2">
+                    <MessageSquare size={16} /> Pending Website Reviews ({(config.pendingReviews || []).length})
+                  </h3>
+                  <span className="text-[10px] font-mono bg-[var(--gold)]/10 text-[var(--gold)] px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    Moderation Queue
+                  </span>
+                </div>
+                
+                {(!config.pendingReviews || config.pendingReviews.length === 0) ? (
+                  <p className="text-xs text-[var(--muted)] italic text-center py-4">
+                    No pending reviews from website visitors. Direct submissions will appear here for your review.
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {config.pendingReviews.map((rev) => (
+                      <div key={rev.id} className="p-5 border border-neutral-900 bg-[#070708] rounded-xl hover:border-neutral-800 transition-colors">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 pb-3 border-b border-neutral-950">
+                          <div>
+                            <h4 className="font-bold text-white text-sm">{rev.client}</h4>
+                            <p className="font-mono text-[10px] text-[var(--gold)] tracking-widest uppercase mt-0.5">{rev.role}</p>
+                          </div>
+                          
+                          {/* Rating display */}
+                          {rev.rating && (
+                            <div className="flex gap-0.5 text-[var(--gold)]">
+                              {Array.from({ length: 5 }).map((_, i) => (
+                                <Star 
+                                  key={i} 
+                                  className={`w-3.5 h-3.5 ${i < rev.rating ? "fill-[var(--gold)] text-[var(--gold)]" : "text-neutral-800"}`} 
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        
+                        <p className="text-xs text-[var(--text)] leading-relaxed italic mb-5">
+                          &quot;{rev.text}&quot;
+                        </p>
+                        
+                        <div className="flex flex-col sm:flex-row gap-2 justify-between items-start sm:items-center pt-2 border-t border-neutral-950">
+                          <span className="text-[9px] font-mono text-[var(--muted)]">
+                            Submitted: {rev.createdAt ? new Date(rev.createdAt).toLocaleString() : "Recently"}
+                          </span>
+                          <div className="flex gap-2 w-full sm:w-auto">
+                            <button
+                              onClick={() => approveReview(rev.id)}
+                              className="flex-1 sm:flex-none flex items-center justify-center gap-1 px-4 py-2 bg-emerald-950/20 hover:bg-emerald-900/40 border border-emerald-900/60 hover:border-emerald-500 text-emerald-400 rounded text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                            >
+                              <Check size={12} /> Approve & Publish
+                            </button>
+                            <button
+                              onClick={() => rejectReview(rev.id)}
+                              className="flex-1 sm:flex-none flex items-center justify-center gap-1 px-4 py-2 bg-red-950/20 hover:bg-red-950/40 border border-red-900/60 hover:border-red-500 text-red-500 rounded text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                            >
+                              <X size={12} /> Reject & Delete
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between pb-6 border-b border-neutral-900 pt-4">
                 <h3 className="font-mono text-sm tracking-[3px] text-[var(--muted)] uppercase">Manage Testimonials ({(config.testimonials || []).length})</h3>
                 <button 
                   onClick={addTestimonial}

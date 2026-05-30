@@ -41,6 +41,11 @@ export async function GET() {
     if (!config.testimonials) {
       config.testimonials = defaultConfig.testimonials;
     }
+
+    // Fallback: If DB is missing pendingReviews array, provide an empty array
+    if (!config.pendingReviews) {
+      config.pendingReviews = [];
+    }
     
     return NextResponse.json(config);
   } catch (error) {
