@@ -62,13 +62,19 @@ export default function YoutubeShowcase({ videos = [], layout = "grid" }) {
   const [activeFilter, setActiveFilter] = useState("All");
   const [isMounted, setIsMounted] = useState(false);
 
+  // Drag to scroll functionality for desktop
+  const sliderRef = useRef(null);
+  const isDownRef = useRef(false);
+  const startXRef = useRef(0);
+  const scrollLeftRef = useRef(0);
+  const hasMovedRef = useRef(false);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsMounted(true);
     }, 0);
     return () => clearTimeout(timer);
   }, []);
-
 
   useEffect(() => {
     if (activeVideoId) {
@@ -97,7 +103,6 @@ export default function YoutubeShowcase({ videos = [], layout = "grid" }) {
         (v.tags || "").split(",").map(t => t.trim()).includes(activeFilter)
       );
 
-
   const handlePlay = (videoId) => {
     console.log("handlePlay called with videoId:", videoId);
     try {
@@ -115,6 +120,51 @@ export default function YoutubeShowcase({ videos = [], layout = "grid" }) {
   const closeVideo = () => {
     audioEngine.playClick();
     setActiveVideoId(null);
+  };
+
+  const handleMouseDown = (e) => {
+    if (e.button !== 0) return; // Only left click
+    isDownRef.current = true;
+    startXRef.current = e.pageX - sliderRef.current.offsetLeft;
+    scrollLeftRef.current = sliderRef.current.scrollLeft;
+    hasMovedRef.current = false;
+    sliderRef.current.style.cursor = "grabbing";
+    sliderRef.current.style.userSelect = "none";
+  };
+
+  const handleMouseLeave = () => {
+    if (!isDownRef.current) return;
+    isDownRef.current = false;
+    sliderRef.current.style.cursor = "grab";
+    sliderRef.current.style.removeProperty("user-select");
+  };
+
+  const handleMouseUp = () => {
+    isDownRef.current = false;
+    sliderRef.current.style.cursor = "grab";
+    sliderRef.current.style.removeProperty("user-select");
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDownRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - sliderRef.current.offsetLeft;
+    const walk = (x - startXRef.current) * 1.5; // Scroll speed
+    if (Math.abs(walk) > 5) {
+      hasMovedRef.current = true;
+    }
+    sliderRef.current.scrollLeft = scrollLeftRef.current - walk;
+  };
+
+  const handlePlayClick = (e, videoId) => {
+    if (hasMovedRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    handlePlay(videoId);
   };
 
 
@@ -151,17 +201,21 @@ export default function YoutubeShowcase({ videos = [], layout = "grid" }) {
       )}
 
       {/* HORIZONTAL VIDEO CAROUSEL */}
-      <div className="flex overflow-x-auto gap-4 sm:gap-10 pb-10 pt-4 px-4 -mx-4 custom-scrollbar snap-x snap-mandatory">
+      <div 
+        ref={sliderRef}
+        onMouseDown={handleMouseDown}
+        onMouseLeave={handleMouseLeave}
+        onMouseUp={handleMouseUp}
+        onMouseMove={handleMouseMove}
+        style={{ cursor: "grab" }}
+        className="flex overflow-x-auto gap-4 sm:gap-10 pb-10 pt-4 px-4 -mx-4 custom-scrollbar snap-x snap-mandatory select-none"
+      >
         {filteredVideos.map((vid) => (
-          <div key={vid.id} className="relative aspect-video flex-none w-[75vw] sm:w-[500px] md:w-[600px] snap-center perspective-1000 reveal-elem">
+          <div key={vid.id} className="relative aspect-video flex-none w-[75vw] sm:w-[500px] md:w-[600px] snap-center perspective-1000 reveal-elem select-none">
             <TiltCard>
               <div 
                 className="group relative cursor-pointer overflow-hidden rounded-2xl glass-card border border-neutral-900 w-full h-full hover:border-[var(--gold)]/30 transition-all duration-500"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handlePlay(vid.videoId);
-                }}
+                onClick={(e) => handlePlayClick(e, vid.videoId)}
               >
                 {/* THUMBNAIL */}
                 <div 

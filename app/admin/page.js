@@ -381,13 +381,13 @@ export default function AdminPanel() {
   const addPortfolioTrack = () => {
     const newTrack = {
       id: `track-${Date.now()}`,
-      title: "Midnight Vibing",
+      title: "New Track / Demo",
       artist: "Manoj Sahu / Psyclone",
-      genre: "Trap Soul",
+      genre: "Trap Soul / Hip-Hop",
       audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
       coverUrl: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=600&auto=format&fit=crop"
     };
-    setConfig({ ...config, portfolio: [...config.portfolio, newTrack] });
+    setConfig({ ...config, portfolio: [newTrack, ...config.portfolio] });
   };
 
   const removePortfolioTrack = (index) => {
@@ -504,7 +504,7 @@ export default function AdminPanel() {
       description: "Complete sonic balancing and loudness optimization.",
       badge: ""
     };
-    setConfig({ ...config, services: [...config.services, newSvc] });
+    setConfig({ ...config, services: [newSvc, ...config.services] });
   };
 
   const removeService = (index) => {
@@ -528,7 +528,7 @@ export default function AdminPanel() {
       thumbnail: "",
       tags: ""
     };
-    setConfig({ ...config, youtubeWorks: [...(config.youtubeWorks || []), newVid] });
+    setConfig({ ...config, youtubeWorks: [newVid, ...(config.youtubeWorks || [])] });
   };
 
   const removeYoutubeTrack = (index) => {
@@ -547,7 +547,7 @@ export default function AdminPanel() {
     setConfig({ ...config, testimonials: updated });
   };
   const addTestimonial = () => {
-    const updated = [...(config.testimonials || []), { client: "New Client", role: "Artist", text: "New feedback" }];
+    const updated = [{ client: "New Client", role: "Artist", text: "New feedback" }, ...(config.testimonials || [])];
     setConfig({ ...config, testimonials: updated });
   };
   const removeTestimonial = (index) => {
@@ -570,7 +570,7 @@ export default function AdminPanel() {
       description: "A brief description about this visual asset.",
       imageUrl: ""
     };
-    setConfig({ ...config, posters: [...(config.posters || []), newPoster] });
+    setConfig({ ...config, posters: [newPoster, ...(config.posters || [])] });
   };
 
   const removePoster = (index) => {
@@ -889,7 +889,7 @@ export default function AdminPanel() {
 
     setConfig({ 
       ...config, 
-      customSections: [...config.customSections, newSec],
+      customSections: [newSec, ...config.customSections],
       sectionsOrder: newOrder
     });
   };
