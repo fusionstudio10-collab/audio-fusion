@@ -2,47 +2,46 @@
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { X } from "lucide-react";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-
 function TiltCard({ children }) {
   const ref = useRef(null);
 
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const mouseXSpring = useSpring(x, { stiffness: 150, damping: 20 });
-  const mouseYSpring = useSpring(y, { stiffness: 150, damping: 20 });
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["10deg", "-10deg"]);
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-10deg", "10deg"]);
-
   const handleMouseMove = (e) => {
-    if (typeof window !== "undefined" && window.innerWidth < 1024) return; // Completely disable logic on mobile
-    if (!ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    x.set(mouseX / width - 0.5);
-    y.set(mouseY / height - 0.5);
+    if (typeof window !== "undefined" && window.innerWidth < 1024) return;
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const xc = rect.width / 2;
+    const yc = rect.height / 2;
+    const dx = x - xc;
+    const dy = y - yc;
+    const rx = -(dy / yc) * 8; // Max 8 degrees tilt for premium feel
+    const ry = (dx / xc) * 8;
+    el.style.transform = `perspective(1000px) rotateX(${rx}deg) rotateY(${ry}deg) scale3d(1.02, 1.02, 1.02)`;
   };
 
   const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
+    const el = ref.current;
+    if (!el) return;
+    el.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
   };
 
   return (
-    <motion.div
+    <div
       ref={ref}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
-      className="h-full w-full relative group perspective-1000"
+      style={{
+        transition: "transform 0.2s cubic-bezier(0.25, 1, 0.5, 1)",
+        transformStyle: "preserve-3d"
+      }}
+      className="h-full w-full relative group"
     >
       <div style={{ transform: "translateZ(30px)", transformStyle: "preserve-3d" }} className="h-full w-full">
         {children}
       </div>
-    </motion.div>
+    </div>
   );
 }
 

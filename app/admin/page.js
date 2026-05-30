@@ -2168,12 +2168,11 @@ export default function AdminPanel() {
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <select
-                    value={config.sectionLayouts?.["youtube-works"] || "grid"}
-                    onChange={(e) => handleLayoutChange("youtube-works", e.target.value)}
-                    className="bg-[#070708] border border-neutral-900 rounded p-2 text-sm text-[var(--text)] focus:outline-none cursor-pointer"
+                    value="carousel"
+                    disabled
+                    className="bg-[#070708] border border-neutral-900 rounded p-2 text-sm text-neutral-500 focus:outline-none cursor-not-allowed"
                   >
-                    <option value="grid">Video Preview Grid</option>
-                    <option value="carousel">Panoramic Side-Slider (Creative)</option>
+                    <option value="carousel">Horizontal Slider (Active)</option>
                   </select>
                   <select
                     value={config.sectionAnimations?.["youtube-works"] || "scale-up"}
