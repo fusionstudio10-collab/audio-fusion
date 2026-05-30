@@ -802,9 +802,13 @@ export default function AdminPanel() {
 
   useEffect(() => {
     if (activeTab === "domain" && config?.customDomain) {
-      checkDomainStatus(config.customDomain);
+      const timer = setTimeout(() => {
+        checkDomainStatus(config.customDomain);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [activeTab, config?.customDomain]);
+
 
   const addCustomItem = (sectionId) => {
     const updatedSections = config.customSections.map((sec) => {
