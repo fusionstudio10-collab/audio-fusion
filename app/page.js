@@ -4,7 +4,7 @@ import Link from "next/link";
 import {
   MessageSquare, Send, X, Calendar, Mail, ArrowUpRight, MapPin, Menu
 } from "lucide-react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 
 import { defaultConfig } from "./lib/defaultConfig";
 import audioEngine from "./lib/audioEngine";
@@ -58,6 +58,48 @@ const SectionWrapper = ({ id, bgConfig, children }) => {
     </div>
   );
 };
+
+function TiltCard({ children }) {
+  const ref = useRef(null);
+
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const mouseXSpring = useSpring(x, { stiffness: 150, damping: 20 });
+  const mouseYSpring = useSpring(y, { stiffness: 150, damping: 20 });
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["10deg", "-10deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-10deg", "10deg"]);
+
+  const handleMouseMove = (e) => {
+    if (typeof window !== "undefined" && window.innerWidth < 1024) return; // Completely disable logic on mobile
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    x.set(mouseX / width - 0.5);
+    y.set(mouseY / height - 0.5);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      ref={ref}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+      className="h-full w-full relative group perspective-1000"
+    >
+      <div style={{ transform: "translateZ(30px)", transformStyle: "preserve-3d" }} className="h-full w-full">
+        {children}
+      </div>
+    </motion.div>
+  );
+}
 
 export default function Home() {
   const [hasEntered, setHasEntered] = useState(false);
@@ -503,29 +545,32 @@ export default function Home() {
                         : item.link;
 
                       return (
-                        <div 
-                          key={idx} 
-                          data-cursor={!hasLink ? "" : undefined}
-                          data-cursor-text={!hasLink ? "VIEW" : undefined}
-                          className="p-6 sm:p-8 glass-card border border-neutral-900/60 rounded-2xl flex flex-col justify-between hover:border-[var(--gold)]/30 hover:-translate-y-1.5 hover:shadow-[0_15px_30px_rgba(197,160,89,0.03)] transition-all duration-500 ease-out h-full min-h-[220px]"
-                        >
-                          <div className="space-y-4 mb-6">
-                            <h3 className="font-[family-name:var(--font-playfair)] italic text-xl sm:text-2xl font-bold text-white">{item.title}</h3>
-                            <p className="font-sans text-sm sm:text-base text-[var(--muted)] leading-relaxed whitespace-pre-line">{item.desc}</p>
-                          </div>
-                          
-                          {hasLink && (
-                            <a
-                              href={linkUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              data-cursor
-                              data-cursor-text={item.buttonText || "INQUIRE"}
-                              className="w-full mt-auto py-3 bg-[var(--bg)] border border-neutral-800 rounded text-[11px] font-[family-name:var(--font-syne)] font-bold tracking-[2px] uppercase hover:bg-[var(--text)] hover:text-black hover:border-transparent transition-all duration-300 cursor-pointer text-center block relative z-20 pointer-events-auto"
+                        <div key={idx} className="relative w-full h-full" style={{ perspective: 1500 }}>
+                          <TiltCard>
+                            <div 
+                              data-cursor={!hasLink ? "" : undefined}
+                              data-cursor-text={!hasLink ? "VIEW" : undefined}
+                              className="p-6 sm:p-8 glass-card border border-neutral-900/60 rounded-2xl flex flex-col justify-between hover:border-[var(--gold)]/30 hover:-translate-y-1.5 hover:shadow-[0_15px_30px_rgba(197,160,89,0.03)] transition-all duration-500 ease-out h-full min-h-[220px]"
                             >
-                              {item.buttonText || "Inquire"}
-                            </a>
-                          )}
+                              <div className="space-y-4 mb-6">
+                                <h3 className="font-[family-name:var(--font-playfair)] italic text-xl sm:text-2xl font-bold text-white">{item.title}</h3>
+                                <p className="font-sans text-sm sm:text-base text-[var(--muted)] leading-relaxed whitespace-pre-line">{item.desc}</p>
+                              </div>
+                              
+                              {hasLink && (
+                                <a
+                                  href={linkUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  data-cursor
+                                  data-cursor-text={item.buttonText || "INQUIRE"}
+                                  className="w-full mt-auto py-3 bg-[var(--bg)] border border-neutral-800 rounded text-[11px] font-[family-name:var(--font-syne)] font-bold tracking-[2px] uppercase hover:bg-[var(--text)] hover:text-black hover:border-transparent transition-all duration-300 cursor-pointer text-center block relative z-20 pointer-events-auto"
+                                >
+                                  {item.buttonText || "Inquire"}
+                                </a>
+                              )}
+                            </div>
+                          </TiltCard>
                         </div>
                       );
                     })}
@@ -549,29 +594,32 @@ export default function Home() {
                           : item.link;
 
                         return (
-                          <div 
-                            key={idx} 
-                            data-cursor={!hasLink ? "" : undefined}
-                            data-cursor-text={!hasLink ? "VIEW" : undefined}
-                            className="p-5 sm:p-6 bg-neutral-950/20 border border-neutral-900/50 rounded-xl flex flex-col justify-between hover:border-[var(--gold)]/30 hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(0,0,0,0.4)] transition-all duration-500 ease-out"
-                          >
-                            <div className="mb-3">
-                              <h4 className="font-bold text-xs uppercase text-[var(--gold)] tracking-wider mb-2">{item.title}</h4>
-                              <p className="text-xs text-[var(--muted)] leading-relaxed">{item.desc}</p>
-                            </div>
-                            
-                            {hasLink && (
-                              <a
-                                href={linkUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                data-cursor
-                                data-cursor-text={item.buttonText || "INQUIRE"}
-                                className="w-full mt-2 py-2 bg-[var(--bg)] border border-neutral-800 rounded text-[9px] font-[family-name:var(--font-syne)] font-bold tracking-[1.5px] uppercase hover:bg-[var(--text)] hover:text-black hover:border-transparent transition-all duration-300 cursor-pointer text-center block relative z-20 pointer-events-auto"
+                          <div key={idx} className="relative w-full h-full" style={{ perspective: 1500 }}>
+                            <TiltCard>
+                              <div 
+                                data-cursor={!hasLink ? "" : undefined}
+                                data-cursor-text={!hasLink ? "VIEW" : undefined}
+                                className="p-5 sm:p-6 bg-neutral-950/20 border border-neutral-900/50 rounded-xl flex flex-col justify-between hover:border-[var(--gold)]/30 hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(0,0,0,0.4)] transition-all duration-500 ease-out"
                               >
-                                {item.buttonText || "Inquire"}
-                              </a>
-                            )}
+                                <div className="mb-3">
+                                  <h4 className="font-bold text-xs uppercase text-[var(--gold)] tracking-wider mb-2">{item.title}</h4>
+                                  <p className="text-xs text-[var(--muted)] leading-relaxed">{item.desc}</p>
+                                </div>
+                                
+                                {hasLink && (
+                                  <a
+                                    href={linkUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    data-cursor
+                                    data-cursor-text={item.buttonText || "INQUIRE"}
+                                    className="w-full mt-2 py-2 bg-[var(--bg)] border border-neutral-800 rounded text-[9px] font-[family-name:var(--font-syne)] font-bold tracking-[1.5px] uppercase hover:bg-[var(--text)] hover:text-black hover:border-transparent transition-all duration-300 cursor-pointer text-center block relative z-20 pointer-events-auto"
+                                  >
+                                    {item.buttonText || "Inquire"}
+                                  </a>
+                                )}
+                              </div>
+                            </TiltCard>
                           </div>
                         );
                       })}
