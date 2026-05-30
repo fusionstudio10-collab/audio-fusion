@@ -4,6 +4,7 @@ export const defaultConfig = {
   "email": "studio@audiofusion.com",
   "logoText": "AUDIO FUSION",
   "logoUrl": "https://res.cloudinary.com/digkpl4re/image/upload/v1779885415/audio-fusion/zmndkmubu1fe3yelhrzq.png",
+  "googleReviewUrl": "",
   "tagline": "Your design-led audio co-founder. Hands-on. With No Overhead.",
   "heroIntro": "I partner with ambitious artists & producers building the next generation of sound in hip-hop, pop & cinematic scores.",
   "philosophy": "In a world where presets make it easy to mix, what truly stands out is taste. We're entering an era where sonics are the moat — and building a unique sound requires artists who can also engineer.",

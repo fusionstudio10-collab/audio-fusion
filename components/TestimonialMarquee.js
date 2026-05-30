@@ -63,7 +63,7 @@ function SwipeCard({ item, active, index, onSwipe }) {
   );
 }
 
-export default function TestimonialMarquee({ testimonials = [], layout = "marquee" }) {
+export default function TestimonialMarquee({ testimonials = [], layout = "marquee", googleReviewUrl = "" }) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   if (!testimonials || testimonials.length === 0) return null;
@@ -169,6 +169,22 @@ export default function TestimonialMarquee({ testimonials = [], layout = "marque
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {googleReviewUrl && (
+        <div className="text-center mt-12 sm:mt-16 z-10 relative reveal-elem">
+          <a
+            href={googleReviewUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-full font-mono text-[11px] tracking-widest uppercase bg-neutral-900/80 border border-neutral-800 text-[var(--gold)] hover:text-white hover:bg-neutral-800 hover:border-neutral-600 transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.4)]"
+          >
+            <svg className="w-3.5 h-3.5 fill-current text-[var(--gold)]" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.136 4.114-3.415 0-6.19-2.775-6.19-6.19s2.775-6.19 6.19-6.19c1.554 0 2.969.577 4.057 1.536l3.076-3.076C19.297 2.053 15.938 1 12.24 1 5.922 1 12.24s4.922 11.24 11.24 11.24c6.236 0 11.24-5.004 11.24-11.24 0-.792-.096-1.56-.276-2.28H12.24z"/>
+            </svg>
+            <span>Write a Review on Google</span>
+          </a>
         </div>
       )}
     </section>

@@ -549,7 +549,7 @@ export default function Home() {
           }
           // ── TESTIMONIALS ──────────────────────────────────
           else if (sectionId === "testimonials" && config.testimonials && config.testimonials.length > 0) {
-            sectionContent = <TestimonialMarquee key="testimonials" testimonials={config.testimonials} layout={config.sectionLayouts?.testimonials} />;
+            sectionContent = <TestimonialMarquee key="testimonials" testimonials={config.testimonials} layout={config.sectionLayouts?.testimonials} googleReviewUrl={config.googleReviewUrl} />;
           }
           // ── BOOKING ───────────────────────────────────────
           else if (sectionId === "booking") {

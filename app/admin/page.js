@@ -2167,6 +2167,20 @@ export default function AdminPanel() {
                   </select>
                 </div>
               </div>
+              <div className="p-5 bg-neutral-900/10 border border-neutral-900 rounded-xl space-y-3">
+                <label className="block text-[11px] font-mono text-[var(--muted)] uppercase tracking-widest font-bold">Google Business Review Link (Write a Review Link)</label>
+                <input 
+                  type="text" 
+                  name="googleReviewUrl" 
+                  value={config.googleReviewUrl || ""} 
+                  onChange={handleChange} 
+                  placeholder="Paste your Google Business 'Write a Review' URL (e.g., https://search.google.com/local/writereview?placeid=...)"
+                  className="w-full bg-[#070708] border border-neutral-900 rounded-lg p-3 text-sm text-[var(--text)] focus:outline-none focus:border-neutral-500 font-mono" 
+                />
+                <p className="text-[11px] text-[var(--muted)] leading-relaxed italic">
+                  Add your business review page link from Google Maps / Google Business. A prominent &quot;Write a Review on Google&quot; button will display on your website reviews section.
+                </p>
+              </div>
               <div className="flex items-center justify-between pb-6 border-b border-neutral-900">
                 <h3 className="font-mono text-sm tracking-[3px] text-[var(--muted)] uppercase">Manage Testimonials ({(config.testimonials || []).length})</h3>
                 <button 
