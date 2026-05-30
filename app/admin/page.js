@@ -77,7 +77,27 @@ export default function AdminPanel() {
         const res = await fetch("/api/config");
         if (res.ok) {
           const fetched = await res.json();
-          setConfig({ ...defaultConfig, ...fetched });
+          const merged = { 
+            ...defaultConfig, 
+            ...fetched,
+            sectionLayouts: {
+              ...(defaultConfig.sectionLayouts || {}),
+              ...(fetched.sectionLayouts || {})
+            },
+            sectionAnimations: {
+              ...(defaultConfig.sectionAnimations || {}),
+              ...(fetched.sectionAnimations || {})
+            },
+            theme: {
+              ...(defaultConfig.theme || {}),
+              ...(fetched.theme || {})
+            },
+            sectionBackgrounds: {
+              ...(defaultConfig.sectionBackgrounds || {}),
+              ...(fetched.sectionBackgrounds || {})
+            }
+          };
+          setConfig(merged);
         } else {
           setConfig(defaultConfig);
         }

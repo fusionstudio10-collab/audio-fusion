@@ -195,7 +195,26 @@ export default function Home() {
         const res = await fetch("/api/config");
         if (res.ok) {
           const fetched = await res.json();
-          const merged = { ...defaultConfig, ...fetched };
+          const merged = { 
+            ...defaultConfig, 
+            ...fetched,
+            sectionLayouts: {
+              ...(defaultConfig.sectionLayouts || {}),
+              ...(fetched.sectionLayouts || {})
+            },
+            sectionAnimations: {
+              ...(defaultConfig.sectionAnimations || {}),
+              ...(fetched.sectionAnimations || {})
+            },
+            theme: {
+              ...(defaultConfig.theme || {}),
+              ...(fetched.theme || {})
+            },
+            sectionBackgrounds: {
+              ...(defaultConfig.sectionBackgrounds || {}),
+              ...(fetched.sectionBackgrounds || {})
+            }
+          };
           setConfig(merged);
           if (merged.audios) audioEngine.updateUrls(merged.audios);
         } else {
@@ -215,7 +234,28 @@ export default function Home() {
       if (e.key === "audio_fusion_config") {
         if (e.newValue) {
           try {
-            setConfig({ ...defaultConfig, ...JSON.parse(e.newValue) });
+            const parsed = JSON.parse(e.newValue);
+            const merged = { 
+              ...defaultConfig, 
+              ...parsed,
+              sectionLayouts: {
+                ...(defaultConfig.sectionLayouts || {}),
+                ...(parsed.sectionLayouts || {})
+              },
+              sectionAnimations: {
+                ...(defaultConfig.sectionAnimations || {}),
+                ...(parsed.sectionAnimations || {})
+              },
+              theme: {
+                ...(defaultConfig.theme || {}),
+                ...(parsed.theme || {})
+              },
+              sectionBackgrounds: {
+                ...(defaultConfig.sectionBackgrounds || {}),
+                ...(parsed.sectionBackgrounds || {})
+              }
+            };
+            setConfig(merged);
           } catch (err) {}
         }
       }
