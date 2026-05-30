@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Play, X } from "lucide-react";
+import { Play, X, ChevronDown, Filter } from "lucide-react";
 import audioEngine from "../app/lib/audioEngine";
 
 function getYouTubeId(urlOrId) {
@@ -61,6 +61,7 @@ export default function YoutubeShowcase({ videos = [], layout = "grid" }) {
   const [activeVideoId, setActiveVideoId] = useState(null);
   const [activeFilter, setActiveFilter] = useState("All");
   const [isMounted, setIsMounted] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Drag to scroll functionality for desktop
   const sliderRef = useRef(null);
@@ -181,22 +182,48 @@ export default function YoutubeShowcase({ videos = [], layout = "grid" }) {
         </h2>
       </div>
 
-      {/* FILTERS */}
+      {/* FILTERS DROPDOWN */}
       {allTags.length > 1 && (
-        <div className="flex overflow-x-auto gap-3 mb-10 pb-4 custom-scrollbar snap-x reveal-elem">
-          {allTags.map((tag) => (
-            <button
-              key={tag}
-              onClick={() => setActiveFilter(tag)}
-              className={`whitespace-nowrap px-4 py-2 rounded-full font-mono text-[10px] tracking-widest uppercase transition-colors snap-start ${
-                activeFilter === tag
-                  ? "bg-[var(--gold)] text-black font-bold shadow-[0_0_15px_rgba(197,160,89,0.3)]"
-                  : "bg-neutral-900/50 text-[var(--muted)] border border-neutral-800 hover:border-neutral-600 hover:text-white"
-              }`}
-            >
-              {tag}
-            </button>
-          ))}
+        <div className="relative mb-10 reveal-elem inline-block text-left z-20">
+          <button
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-full font-mono text-[11px] tracking-widest uppercase bg-neutral-900/80 border border-neutral-800 text-white hover:border-[var(--gold)]/50 transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.4)]"
+          >
+            <Filter className="w-3.5 h-3.5 text-[var(--gold)]" />
+            <span>Filter: <strong className="text-[var(--gold)] font-bold">{activeFilter}</strong></span>
+            <ChevronDown className={`w-3.5 h-3.5 text-[var(--muted)] transition-transform duration-300 ${isDropdownOpen ? "rotate-180" : ""}`} />
+          </button>
+
+          {isDropdownOpen && (
+            <>
+              {/* Click outside backdrop */}
+              <div 
+                className="fixed inset-0 z-30" 
+                onClick={() => setIsDropdownOpen(false)}
+              />
+              {/* Dropdown Menu */}
+              <div className="absolute left-0 mt-3 w-64 rounded-xl border border-neutral-800 bg-neutral-950/95 backdrop-blur-md p-2 shadow-[0_10px_30px_rgba(0,0,0,0.8),0_0_30px_rgba(197,160,89,0.05)] z-40 animate-[fadeIn_0.2s_ease_forwards] origin-top-left">
+                <div className="flex flex-col gap-1 max-h-72 overflow-y-auto custom-scrollbar">
+                  {allTags.map((tag) => (
+                    <button
+                      key={tag}
+                      onClick={() => {
+                        setActiveFilter(tag);
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-2.5 rounded-lg font-mono text-[10px] tracking-widest uppercase transition-colors ${
+                        activeFilter === tag
+                          ? "bg-[var(--gold)] text-black font-bold"
+                          : "text-[var(--muted)] hover:text-white hover:bg-neutral-900"
+                      }`}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </div>
       )}
 
