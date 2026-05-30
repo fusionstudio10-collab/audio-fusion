@@ -99,8 +99,17 @@ export default function YoutubeShowcase({ videos = [], layout = "grid" }) {
 
 
   const handlePlay = (videoId) => {
-    audioEngine.playClick();
-    setActiveVideoId(getYouTubeId(videoId));
+    console.log("handlePlay called with videoId:", videoId);
+    try {
+      if (audioEngine && typeof audioEngine.playClick === "function") {
+        audioEngine.playClick();
+      }
+    } catch (e) {
+      console.warn("Audio engine play click failed:", e);
+    }
+    const cleanId = getYouTubeId(videoId);
+    console.log("Parsed YouTube ID for iframe:", cleanId);
+    setActiveVideoId(cleanId);
   };
 
   const closeVideo = () => {
@@ -148,7 +157,11 @@ export default function YoutubeShowcase({ videos = [], layout = "grid" }) {
             <TiltCard>
               <div 
                 className="group relative cursor-pointer overflow-hidden rounded-2xl glass-card border border-neutral-900 w-full h-full hover:border-[var(--gold)]/30 transition-all duration-500"
-                onClick={() => handlePlay(vid.videoId)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handlePlay(vid.videoId);
+                }}
               >
                 {/* THUMBNAIL */}
                 <div 
