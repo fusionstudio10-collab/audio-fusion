@@ -2403,7 +2403,7 @@ export default function AdminPanel() {
                         {bg.type !== "color" && (
                           <div className="col-span-1 md:col-span-2">
                             <label className="block text-[13px] font-mono text-[var(--muted)] mb-1 uppercase">Media URL (Paste direct link OR upload)</label>
-                            <div className="flex gap-2">
+                            <div className="flex flex-col sm:flex-row gap-2">
                               <input 
                                 type="text" 
                                 value={bg.url} 
@@ -2411,23 +2411,26 @@ export default function AdminPanel() {
                                 className="flex-1 bg-[#070708] border border-neutral-900 rounded p-2 text-sm text-[var(--text)] font-mono text-[var(--neon-blue)]" 
                                 placeholder="Paste MP4, Image, or YouTube URL..." 
                               />
-                              <label className="px-3 py-2 bg-neutral-900 border border-neutral-800 hover:border-neutral-700 rounded font-bold text-[11px] uppercase tracking-wider text-center cursor-pointer shrink-0 flex items-center justify-center">
-                                {uploadingField === `bg-${sectionId}` ? 'Uploading...' : 'Upload File'}
-                                <input 
-                                  type="file" 
-                                  accept={bg.type === "video" ? "video/*" : "image/*"} 
-                                  onChange={(e) => handleBackgroundUpload(e, sectionId)} 
-                                  className="hidden" 
-                                  disabled={uploadingField === `bg-${sectionId}`} 
-                                />
-                              </label>
-                              <button 
-                                onClick={() => handleDeleteMedia(bg.url, () => handleBackgroundChange(sectionId, "url", ""))} 
-                                className="px-3 py-2 bg-red-950/30 border border-red-900/50 hover:bg-red-900/50 text-red-500 rounded font-bold text-[11px] uppercase tracking-wider transition-colors shrink-0 flex items-center justify-center"
-                                title="Delete media from Cloudinary"
-                              >
-                                Delete
-                              </button>
+                              <div className="flex gap-2 w-full sm:w-auto">
+                                <label className="flex-1 sm:flex-none px-3 py-2 bg-neutral-900 border border-neutral-800 hover:border-neutral-700 rounded font-bold text-[11px] uppercase tracking-wider text-center cursor-pointer shrink-0 flex items-center justify-center">
+                                  {uploadingField === `bg-${sectionId}` ? 'Uploading...' : 'Upload File'}
+                                  <input 
+                                    type="file" 
+                                    accept={bg.type === "video" ? "video/*" : "image/*"} 
+                                    onChange={(e) => handleBackgroundUpload(e, sectionId)} 
+                                    className="hidden" 
+                                    disabled={uploadingField === `bg-${sectionId}`} 
+                                  />
+                                </label>
+                                <button 
+                                  type="button"
+                                  onClick={() => handleDeleteMedia(bg.url, () => handleBackgroundChange(sectionId, "url", ""))} 
+                                  className="flex-1 sm:flex-none px-3 py-2 bg-red-950/30 border border-red-900/50 hover:bg-red-900/50 text-red-500 rounded font-bold text-[11px] uppercase tracking-wider transition-colors shrink-0 flex items-center justify-center"
+                                  title="Delete media from Cloudinary"
+                                >
+                                  Delete
+                                </button>
+                              </div>
                             </div>
                             {bg.type === "video" && <p className="text-[11px] text-[var(--muted)] mt-1 italic">For optimal performance, use a compressed .mp4 file or paste a YouTube URL.</p>}
                           </div>
