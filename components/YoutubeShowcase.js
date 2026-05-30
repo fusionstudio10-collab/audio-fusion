@@ -3,6 +3,16 @@ import { useState, useRef, useEffect } from "react";
 import { Play, X } from "lucide-react";
 import audioEngine from "../app/lib/audioEngine";
 
+function getYouTubeId(urlOrId) {
+  if (!urlOrId) return "";
+  if (/^[a-zA-Z0-9_-]{11}$/.test(urlOrId)) {
+    return urlOrId;
+  }
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = urlOrId.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : urlOrId;
+}
+
 function TiltCard({ children }) {
   const ref = useRef(null);
 
@@ -80,7 +90,7 @@ export default function YoutubeShowcase({ videos = [], layout = "grid" }) {
 
   const handlePlay = (videoId) => {
     audioEngine.playClick();
-    setActiveVideoId(videoId);
+    setActiveVideoId(getYouTubeId(videoId));
   };
 
   const closeVideo = () => {
@@ -133,7 +143,7 @@ export default function YoutubeShowcase({ videos = [], layout = "grid" }) {
                 {/* THUMBNAIL */}
                 <div 
                   className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                  style={{ backgroundImage: `url(${vid.thumbnail || `https://img.youtube.com/vi/${vid.videoId}/maxresdefault.jpg`})` }}
+                  style={{ backgroundImage: `url(${vid.thumbnail || `https://img.youtube.com/vi/${getYouTubeId(vid.videoId)}/maxresdefault.jpg`})` }}
                 />
                 {/* OVERLAY */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
