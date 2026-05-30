@@ -25,7 +25,8 @@ import {
   GripVertical,
   Image as ImageIcon,
   MessageSquare,
-  Palette
+  Palette,
+  Globe
 } from "lucide-react";
 import { defaultConfig } from "../lib/defaultConfig";
 import { toast } from "../../components/Toast";
@@ -69,6 +70,14 @@ export default function AdminPanel() {
   const [draggedFounderIndex, setDraggedFounderIndex] = useState(null);
   const [draggedYoutubeIndex, setDraggedYoutubeIndex] = useState(null);
   const [draggedCategory, setDraggedCategory] = useState(null);
+
+  // Custom Domain management states
+  const [domainStatus, setDomainStatus] = useState(null);
+  const [isCheckingDomain, setIsCheckingDomain] = useState(false);
+  const [setupRequired, setSetupRequired] = useState(false);
+  const [newDomain, setNewDomain] = useState("");
+  const [isAddingDomain, setIsAddingDomain] = useState(false);
+  const [isRemovingDomain, setIsRemovingDomain] = useState(false);
 
   // Load config & authorization state
   useEffect(() => {
@@ -703,6 +712,100 @@ export default function AdminPanel() {
     });
   };
 
+  const checkDomainStatus = async (domainName) => {
+    if (!domainName) return;
+    setIsCheckingDomain(true);
+    try {
+      const res = await fetch(`/api/domain?domain=${encodeURIComponent(domainName)}`);
+      const data = await res.json();
+      if (data.setupRequired) {
+        setSetupRequired(true);
+      } else {
+        setSetupRequired(false);
+        setDomainStatus(data);
+      }
+    } catch (e) {
+      console.error("Failed to check domain status:", e);
+    } finally {
+      setIsCheckingDomain(false);
+    }
+  };
+
+  const handleConnectDomain = async () => {
+    if (!newDomain.trim()) {
+      toast.error("Please enter a valid domain name");
+      return;
+    }
+    const cleanDomain = newDomain.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/$/, "");
+    setIsAddingDomain(true);
+    try {
+      const res = await fetch("/api/domain", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ domain: cleanDomain })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const updatedConfig = { ...config, customDomain: cleanDomain };
+        setConfig(updatedConfig);
+        await fetch("/api/config", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedConfig)
+        });
+        localStorage.setItem("audio_fusion_config", JSON.stringify(updatedConfig));
+        toast.success(`Domain ${cleanDomain} added successfully! Now configure your DNS settings.`);
+        checkDomainStatus(cleanDomain);
+      } else {
+        toast.error(data.error || "Failed to add domain to project");
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Error connecting custom domain");
+    } finally {
+      setIsAddingDomain(false);
+    }
+  };
+
+  const handleDisconnectDomain = async () => {
+    if (!config.customDomain) return;
+    if (!window.confirm(`Are you sure you want to disconnect ${config.customDomain}?`)) return;
+    
+    setIsRemovingDomain(true);
+    try {
+      const res = await fetch(`/api/domain?domain=${encodeURIComponent(config.customDomain)}`, {
+        method: "DELETE"
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const updatedConfig = { ...config, customDomain: "" };
+        setConfig(updatedConfig);
+        await fetch("/api/config", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedConfig)
+        });
+        localStorage.setItem("audio_fusion_config", JSON.stringify(updatedConfig));
+        setDomainStatus(null);
+        setNewDomain("");
+        toast.success("Domain disconnected successfully.");
+      } else {
+        toast.error(data.error || "Failed to disconnect domain from project");
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Error disconnecting domain");
+    } finally {
+      setIsRemovingDomain(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "domain" && config?.customDomain) {
+      checkDomainStatus(config.customDomain);
+    }
+  }, [activeTab, config?.customDomain]);
+
   const addCustomItem = (sectionId) => {
     const updatedSections = config.customSections.map((sec) => {
       if (sec.id === sectionId) {
@@ -760,6 +863,7 @@ export default function AdminPanel() {
   const navItems = [
     { id: "global", icon: <Settings size={16} />, label: "Global Settings" },
     { id: "theme", icon: <Palette size={16} />, label: "Branding Styles" },
+    { id: "domain", icon: <Globe size={16} />, label: "Custom Domains" },
     { id: "layout", icon: <Layout size={16} />, label: "Page Layout Sequences" },
     { id: "custom-sections", icon: <Compass size={16} />, label: "Custom Page Blocks" },
     { id: "backgrounds", icon: <ImageIcon size={16} />, label: "Section Backgrounds & FX" },
@@ -1037,6 +1141,202 @@ export default function AdminPanel() {
                       onChange={(e) => handleThemeColorChange("muted", e.target.value)} 
                       className="flex-1 bg-[#070708] border border-neutral-900 rounded p-2 text-sm text-[var(--text)] font-mono"
                     />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB: CUSTOM DOMAINS */}
+          {activeTab === "domain" && (
+            <div className="space-y-8 animate-fade-in">
+              <div className="p-4 bg-neutral-900/10 border border-neutral-900 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h4 className="text-xs uppercase font-bold text-white tracking-wider">Vercel Custom Domains</h4>
+                  <p className="text-xs text-[var(--muted)] mt-1">Connect your own custom domain directly to this audio studio website.</p>
+                </div>
+              </div>
+
+              {setupRequired ? (
+                <div className="p-6 bg-red-950/15 border border-red-900/30 rounded-xl space-y-4 text-center">
+                  <Globe className="w-12 h-12 text-red-500 mx-auto opacity-70" />
+                  <div>
+                    <h4 className="text-sm font-bold uppercase text-white font-mono tracking-wider">Vercel API Settings Required</h4>
+                    <p className="text-xs text-[var(--muted)] mt-1 max-w-lg mx-auto">
+                      Please input your Vercel Account API credentials in the **Developer Settings** accordion below. This enables the admin panel to securely register domains and query DNS validation status.
+                    </p>
+                  </div>
+                </div>
+              ) : !config.customDomain ? (
+                /* CONNECT DOMAIN FORM */
+                <div className="p-6 border border-neutral-900 rounded-xl bg-neutral-950/20 space-y-4">
+                  <h3 className="font-mono text-xs tracking-widest text-[var(--gold)] uppercase font-bold">Connect a Custom Domain</h3>
+                  <p className="text-xs text-[var(--muted)] leading-relaxed">
+                    Type your custom apex domain (e.g. <code>studio.com</code>) or subdomain (e.g. <code>www.studio.com</code>) below. The admin dashboard will automatically link it to your Vercel deployment.
+                  </p>
+                  
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <input 
+                      type="text" 
+                      placeholder="e.g. studio.com"
+                      value={newDomain}
+                      onChange={(e) => setNewDomain(e.target.value)}
+                      className="flex-1 bg-[#070708] border border-neutral-900 rounded-lg p-3 text-sm text-[var(--text)] font-mono"
+                    />
+                    <button 
+                      onClick={handleConnectDomain}
+                      disabled={isAddingDomain}
+                      className="px-6 py-3 bg-[var(--gold)] text-black rounded-lg font-bold text-xs uppercase tracking-widest transition-opacity hover:opacity-90 disabled:opacity-50"
+                    >
+                      {isAddingDomain ? "Connecting..." : "Connect Domain"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* DOMAIN CONNECTED STATE */
+                <div className="space-y-6">
+                  <div className="p-6 border border-neutral-900 rounded-xl bg-neutral-950/30 space-y-4">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                      <div>
+                        <span className="text-[10px] font-mono tracking-widest text-[var(--gold)] uppercase">Connected Domain</span>
+                        <h3 className="text-xl sm:text-2xl font-bold font-mono text-white mt-1">{config.customDomain}</h3>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => checkDomainStatus(config.customDomain)}
+                          disabled={isCheckingDomain}
+                          className="px-4 py-2 border border-neutral-800 rounded text-xs font-bold uppercase tracking-wider text-[var(--text)] hover:bg-neutral-900/40 hover:border-neutral-700 transition-all cursor-pointer"
+                        >
+                          {isCheckingDomain ? "Verifying..." : "Verify DNS"}
+                        </button>
+                        <button 
+                          onClick={handleDisconnectDomain}
+                          disabled={isRemovingDomain}
+                          className="px-4 py-2 bg-red-950/30 text-red-500 border border-red-900/30 rounded text-xs font-bold uppercase tracking-wider hover:bg-red-900/40 transition-all cursor-pointer"
+                        >
+                          {isRemovingDomain ? "Disconnecting..." : "Disconnect"}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* VALIDATION STATUS CARD */}
+                    <div className="pt-4 border-t border-neutral-900/60">
+                      <span className="text-[10px] font-mono text-[var(--muted)] uppercase tracking-wider">Status:</span>
+                      {isCheckingDomain ? (
+                        <span className="ml-2 text-xs font-mono text-[var(--gold)] animate-pulse">Checking DNS configuration on Vercel...</span>
+                      ) : domainStatus?.verified ? (
+                        <span className="ml-2 inline-flex items-center gap-1.5 text-xs font-mono text-[var(--neon-green)] font-bold">
+                          ✓ Verified & Active (SSL Certificate Issued)
+                        </span>
+                      ) : (
+                        <span className="ml-2 inline-flex items-center gap-1.5 text-xs font-mono text-amber-500 font-bold">
+                          ⚠ DNS Configuration Pending
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* DNS CONFIGURATION INSTRUCTIONS */}
+                  {!domainStatus?.verified && (
+                    <div className="p-6 border border-neutral-900 rounded-xl space-y-4 bg-neutral-950/10">
+                      <h3 className="font-mono text-xs tracking-widest text-[var(--gold)] uppercase font-bold">Configure DNS Records at Your Registrar</h3>
+                      <p className="text-xs text-[var(--muted)] leading-relaxed">
+                        To activate <strong>{config.customDomain}</strong>, log in to your domain registrar (GoDaddy, Namecheap, Google Domains, etc.) and add the following records:
+                      </p>
+
+                      <div className="space-y-4">
+                        {/* Apex Domain Record Setup */}
+                        {!config.customDomain.includes("www.") && (
+                          <div className="p-4 bg-[#070708] border border-neutral-900 rounded-lg space-y-2">
+                            <div className="flex justify-between items-center text-[10px] font-mono text-[var(--gold)] uppercase">
+                              <span>Apex Domain Configuration</span>
+                              <span className="text-neutral-600">A Record</span>
+                            </div>
+                            <div className="grid grid-cols-3 gap-2 text-xs font-mono pt-1 text-white">
+                              <div><strong>Type:</strong> A</div>
+                              <div><strong>Host:</strong> @</div>
+                              <div><strong>Points to:</strong> 76.76.21.21</div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Subdomain (e.g. www.domain.com) CNAME Setup */}
+                        <div className="p-4 bg-[#070708] border border-neutral-900 rounded-lg space-y-2">
+                          <div className="flex justify-between items-center text-[10px] font-mono text-[var(--gold)] uppercase">
+                            <span>Subdomain Configuration</span>
+                            <span className="text-neutral-600">CNAME Record</span>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2 text-xs font-mono pt-1 text-white">
+                            <div><strong>Type:</strong> CNAME</div>
+                            <div><strong>Host:</strong> {config.customDomain.includes("www.") ? "www" : "* / sub"}</div>
+                            <div><strong>Points to:</strong> cname.vercel-dns.com</div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 bg-[var(--gold)]/5 border border-[var(--gold)]/10 rounded-lg">
+                        <p className="text-[10px] text-[var(--gold)] uppercase font-mono tracking-wider font-bold">Important Info</p>
+                        <p className="text-[11px] text-white/70 mt-1 leading-relaxed">
+                          DNS updates can take anywhere from 5 minutes to 24 hours to propagate worldwide. Once added, click the <strong>Verify DNS</strong> button above to check status.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ACCORDION: DEVELOPER SETUP */}
+              <div className="border border-neutral-900 rounded-xl overflow-hidden bg-neutral-950/10">
+                <div className="p-4 bg-neutral-900/20 border-b border-neutral-900 flex justify-between items-center">
+                  <div>
+                    <h4 className="text-xs uppercase font-bold text-white tracking-wider">Vercel API Settings (Developer Credentials)</h4>
+                    <p className="text-[10px] text-[var(--muted)] mt-0.5">Required for backend synchronization of project custom domains.</p>
+                  </div>
+                </div>
+
+                <div className="p-6 space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Vercel API Auth Token</label>
+                      <input 
+                        type="password" 
+                        value={config.vercelToken || ""} 
+                        onChange={(e) => setConfig({ ...config, vercelToken: e.target.value })} 
+                        placeholder="e.g. v1a2b3c4..."
+                        className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-sm text-[var(--text)] font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Vercel Project ID</label>
+                      <input 
+                        type="text" 
+                        value={config.vercelProjectId || ""} 
+                        onChange={(e) => setConfig({ ...config, vercelProjectId: e.target.value })} 
+                        placeholder="e.g. prj_12345..."
+                        className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-sm text-[var(--text)] font-mono"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-[11px] font-mono text-[var(--muted)] mb-1 uppercase">Vercel Team/Org ID (Optional)</label>
+                      <input 
+                        type="text" 
+                        value={config.vercelTeamId || ""} 
+                        onChange={(e) => setConfig({ ...config, vercelTeamId: e.target.value })} 
+                        placeholder="e.g. team_UOiuTungrKP..."
+                        className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-sm text-[var(--text)] font-mono"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="pt-2 text-right">
+                    <button 
+                      onClick={handleSave}
+                      disabled={isSaving}
+                      className="px-4 py-2.5 bg-neutral-900 border border-neutral-800 text-[var(--gold)] hover:border-[var(--gold)]/30 rounded text-xs font-bold uppercase tracking-widest transition-colors cursor-pointer"
+                    >
+                      {isSaving ? "Saving..." : "Save Developer Keys"}
+                    </button>
                   </div>
                 </div>
               </div>

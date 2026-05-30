@@ -245,6 +245,10 @@ export const defaultConfig = {
     "text": "#f5f3ef",
     "muted": "#8e8b82"
   },
+  "customDomain": "",
+  "vercelToken": "",
+  "vercelProjectId": "prj_WGZDYUHobHEGoL2VsSqHg38eZCGi",
+  "vercelTeamId": "team_UOiuTungrKPg6vClzFuQmJPJ",
   "sectionAnimations": {
     "hero": "fade-slide",
     "founders": "perspective-3d",
