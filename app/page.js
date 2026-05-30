@@ -22,13 +22,34 @@ import YoutubeShowcase from "../components/YoutubeShowcase";
 import PosterGallery from "../components/PosterGallery";
 import TestimonialMarquee from "../components/TestimonialMarquee";
 
-const SectionWrapper = ({ id, bgConfig, children }) => {
+const SectionWrapper = ({ id, bgConfig, animation = "fade-slide", children }) => {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const y = useTransform(scrollYProgress, [0, 1], ["-15%", "15%"]);
 
+  let initial = { opacity: 0, y: 40 };
+  let whileInView = { opacity: 1, y: 0 };
+  const transition = { duration: 0.8, ease: [0.16, 1, 0.3, 1] };
+
+  if (animation === "fade-only") {
+    initial = { opacity: 0 };
+    whileInView = { opacity: 1 };
+  } else if (animation === "scale-up") {
+    initial = { opacity: 0, scale: 0.9 };
+    whileInView = { opacity: 1, scale: 1 };
+  } else if (animation === "slide-left") {
+    initial = { opacity: 0, x: -60 };
+    whileInView = { opacity: 1, x: 0 };
+  } else if (animation === "slide-right") {
+    initial = { opacity: 0, x: 60 };
+    whileInView = { opacity: 1, x: 0 };
+  } else if (animation === "perspective-3d") {
+    initial = { opacity: 0, rotateX: 20, y: 60 };
+    whileInView = { opacity: 1, rotateX: 0, y: 0 };
+  }
+
   return (
-    <div id={`wrapper-${id}`} ref={ref} className="relative w-full overflow-hidden">
+    <div id={`wrapper-${id}`} ref={ref} className="relative w-full overflow-hidden" style={{ perspective: 1200 }}>
       {/* Background Layer (Fixed to this container with Parallax) */}
       {bgConfig && bgConfig.type !== "color" && bgConfig.url && (
         <motion.div className="absolute inset-0 w-full h-full pointer-events-none" style={{ y, zIndex: 0 }}>
@@ -47,10 +68,10 @@ const SectionWrapper = ({ id, bgConfig, children }) => {
       
       {/* Content Layer with Entry Animation */}
       <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
+        initial={initial}
+        whileInView={whileInView}
         viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        transition={transition}
         className="relative z-10"
       >
         {children}
@@ -98,6 +119,51 @@ function TiltCard({ children }) {
         {children}
       </div>
     </motion.div>
+  );
+}
+
+function CustomAccordionItem({ title, desc, hasLink, linkUrl, buttonText }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="w-full">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full py-4 flex items-center justify-between text-left group"
+      >
+        <span className="font-[family-name:var(--font-playfair)] italic text-lg sm:text-2xl font-bold text-white group-hover:text-[var(--gold)] transition-colors">
+          {title}
+        </span>
+        <span className="text-[var(--gold)] text-xl transition-transform duration-300 font-mono">
+          {isOpen ? "−" : "+"}
+        </span>
+      </button>
+      
+      <motion.div
+        initial={false}
+        animate={{ height: isOpen ? "auto" : 0, opacity: isOpen ? 1 : 0 }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        className="overflow-hidden"
+      >
+        <div className="pb-4 pr-8 space-y-4">
+          <p className="font-sans text-sm sm:text-base text-[var(--muted)] leading-relaxed whitespace-pre-line">
+            {desc}
+          </p>
+          {hasLink && (
+            <a
+              href={linkUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-cursor
+              data-cursor-text={buttonText || "INQUIRE"}
+              className="inline-block py-2.5 px-6 bg-[var(--bg)] border border-neutral-800 rounded text-[10px] font-[family-name:var(--font-syne)] font-bold tracking-[2px] uppercase hover:bg-[var(--text)] hover:text-black hover:border-transparent transition-all duration-300 cursor-pointer"
+            >
+              {buttonText || "Inquire"}
+            </a>
+          )}
+        </div>
+      </motion.div>
+    </div>
   );
 }
 
@@ -275,6 +341,18 @@ export default function Home() {
   return (
     <>
       <CustomCursor />
+      {config.theme && (
+        <style dangerouslySetInnerHTML={{ __html: `
+          :root {
+            --bg: ${config.theme.bg || "#070708"};
+            --gold: ${config.theme.gold || "#c5a059"};
+            --neon-blue: ${config.theme.neonBlue || "#e2c074"};
+            --text: ${config.theme.text || "#f5f3ef"};
+            --muted: ${config.theme.muted || "#8e8b82"};
+            --border: color-mix(in srgb, var(--gold) 8%, transparent);
+          }
+        `}} />
+      )}
 
 
       {/* GLOBAL PROMO BANNER */}
@@ -410,11 +488,11 @@ export default function Home() {
           }
           // ── FOUNDERS ──────────────────────────────────────
           else if (sectionId === "founders") {
-            sectionContent = <FounderShowcase key="founders" founders={config.founders} />;
+            sectionContent = <FounderShowcase key="founders" founders={config.founders} layout={config.sectionLayouts?.founders} />;
           }
           // ── POSTERS ─────────────────────────────────────────
           else if (sectionId === "posters") {
-            sectionContent = <PosterGallery key="posters" posters={config.posters} />;
+            sectionContent = <PosterGallery key="posters" posters={config.posters} layout={config.sectionLayouts?.posters} />;
           }
           // ── PORTFOLIO / SHOWCASE ──────────────────────────────────────
           else if (sectionId === "showcase") {
@@ -422,15 +500,15 @@ export default function Home() {
           }
           // ── YOUTUBE WORKS ─────────────────────────────────
           else if (sectionId === "youtube-works" && config.youtubeWorks && config.youtubeWorks.length > 0) {
-            sectionContent = <YoutubeShowcase key="youtube-works" videos={config.youtubeWorks} />;
+            sectionContent = <YoutubeShowcase key="youtube-works" videos={config.youtubeWorks} layout={config.sectionLayouts?.["youtube-works"]} />;
           }
           // ── SERVICES ──────────────────────────────────────
           else if (sectionId === "services") {
-            sectionContent = <ServicesList key="services" services={config.services} onBookClick={handleBookClick} whatsappNumber={config.whatsappNumber} />;
+            sectionContent = <ServicesList key="services" services={config.services} onBookClick={handleBookClick} whatsappNumber={config.whatsappNumber} layout={config.sectionLayouts?.services} />;
           }
           // ── TESTIMONIALS ──────────────────────────────────
           else if (sectionId === "testimonials" && config.testimonials && config.testimonials.length > 0) {
-            sectionContent = <TestimonialMarquee key="testimonials" testimonials={config.testimonials} />;
+            sectionContent = <TestimonialMarquee key="testimonials" testimonials={config.testimonials} layout={config.sectionLayouts?.testimonials} />;
           }
           // ── BOOKING ───────────────────────────────────────
           else if (sectionId === "booking") {
@@ -526,67 +604,18 @@ export default function Home() {
               if (customSec.layout === "text-only") {
                 sectionContent = (
                   <section key={customSec.id} id={customSec.id} className="py-20 sm:py-28 px-5 sm:px-8 md:px-16 max-w-5xl mx-auto reveal-elem">
-                  <span className="text-[10px] tracking-[4px] uppercase font-bold text-[var(--gold)] mb-3 block font-[family-name:var(--font-syne)]">{customSec.subtitle}</span>
-                  <h2 className="font-[family-name:var(--font-playfair)] italic text-3xl sm:text-4xl md:text-6xl font-black mb-8 leading-tight text-white">{customSec.title}</h2>
-                  <p className="font-sans text-base sm:text-lg md:text-2xl text-[var(--muted)] leading-relaxed whitespace-pre-line">{customSec.content}</p>
-                </section>
-              );
-            } else if (customSec.layout === "cards-grid") {
-              sectionContent = (
-                <section key={customSec.id} id={customSec.id} className="py-20 sm:py-28 px-5 sm:px-8 md:px-16 max-w-6xl mx-auto reveal-elem">
-                  <span className="text-[10px] tracking-[4px] uppercase font-bold text-[var(--gold)] mb-3 block font-[family-name:var(--font-syne)]">{customSec.subtitle}</span>
-                  <h2 className="font-[family-name:var(--font-playfair)] italic text-3xl sm:text-4xl md:text-6xl font-black mb-8 sm:mb-12 leading-tight text-white">{customSec.title}</h2>
-                  {customSec.content && <p className="font-sans text-base sm:text-lg text-[var(--muted)] mb-8 sm:mb-12 leading-relaxed max-w-3xl">{customSec.content}</p>}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-                    {customSec.items?.map((item, idx) => {
-                      const hasLink = item.showInquire || item.link;
-                      const linkUrl = item.showInquire
-                        ? `https://wa.me/91${(config.whatsappNumber || "7738882899").replace(/\D/g, "")}?text=${encodeURIComponent(`Hi! I want to inquire about *${item.title}* from your website.`)}`
-                        : item.link;
-
-                      return (
-                        <div key={idx} className="relative w-full h-full" style={{ perspective: 1500 }}>
-                          <TiltCard>
-                            <div 
-                              data-cursor={!hasLink ? "" : undefined}
-                              data-cursor-text={!hasLink ? "VIEW" : undefined}
-                              className="p-6 sm:p-8 glass-card border border-neutral-900/60 rounded-2xl flex flex-col justify-between hover:border-[var(--gold)]/30 hover:-translate-y-1.5 hover:shadow-[0_15px_30px_rgba(197,160,89,0.03)] transition-all duration-500 ease-out h-full min-h-[220px]"
-                            >
-                              <div className="space-y-4 mb-6">
-                                <h3 className="font-[family-name:var(--font-playfair)] italic text-xl sm:text-2xl font-bold text-white">{item.title}</h3>
-                                <p className="font-sans text-sm sm:text-base text-[var(--muted)] leading-relaxed whitespace-pre-line">{item.desc}</p>
-                              </div>
-                              
-                              {hasLink && (
-                                <a
-                                  href={linkUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  data-cursor
-                                  data-cursor-text={item.buttonText || "INQUIRE"}
-                                  className="w-full mt-auto py-3 bg-[var(--bg)] border border-neutral-800 rounded text-[11px] font-[family-name:var(--font-syne)] font-bold tracking-[2px] uppercase hover:bg-[var(--text)] hover:text-black hover:border-transparent transition-all duration-300 cursor-pointer text-center block relative z-20 pointer-events-auto"
-                                >
-                                  {item.buttonText || "Inquire"}
-                                </a>
-                              )}
-                            </div>
-                          </TiltCard>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </section>
-              );
-            } else if (customSec.layout === "split-image-text") {
-              sectionContent = (
-                <section key={customSec.id} id={customSec.id} className="py-20 sm:py-28 px-5 sm:px-8 md:px-16 max-w-6xl mx-auto reveal-elem">
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
-                    <div className="lg:col-span-7 space-y-5">
-                      <span className="text-[10px] tracking-[4px] uppercase font-bold text-[var(--gold)] block font-[family-name:var(--font-syne)]">{customSec.subtitle}</span>
-                      <h2 className="font-[family-name:var(--font-playfair)] italic text-3xl sm:text-4xl md:text-6xl font-black leading-tight text-white">{customSec.title}</h2>
-                      <p className="font-sans text-base sm:text-lg md:text-xl text-[var(--muted)] leading-relaxed whitespace-pre-line">{customSec.content}</p>
-                    </div>
-                    <div className="lg:col-span-5 space-y-4">
+                    <span className="text-[10px] tracking-[4px] uppercase font-bold text-[var(--gold)] mb-3 block font-[family-name:var(--font-syne)]">{customSec.subtitle}</span>
+                    <h2 className="font-[family-name:var(--font-playfair)] italic text-3xl sm:text-4xl md:text-6xl font-black mb-8 leading-tight text-white">{customSec.title}</h2>
+                    <p className="font-sans text-base sm:text-lg md:text-2xl text-[var(--muted)] leading-relaxed whitespace-pre-line">{customSec.content}</p>
+                  </section>
+                );
+              } else if (customSec.layout === "cards-grid") {
+                sectionContent = (
+                  <section key={customSec.id} id={customSec.id} className="py-20 sm:py-28 px-5 sm:px-8 md:px-16 max-w-6xl mx-auto reveal-elem">
+                    <span className="text-[10px] tracking-[4px] uppercase font-bold text-[var(--gold)] mb-3 block font-[family-name:var(--font-syne)]">{customSec.subtitle}</span>
+                    <h2 className="font-[family-name:var(--font-playfair)] italic text-3xl sm:text-4xl md:text-6xl font-black mb-8 sm:mb-12 leading-tight text-white">{customSec.title}</h2>
+                    {customSec.content && <p className="font-sans text-base sm:text-lg text-[var(--muted)] mb-8 sm:mb-12 leading-relaxed max-w-3xl">{customSec.content}</p>}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
                       {customSec.items?.map((item, idx) => {
                         const hasLink = item.showInquire || item.link;
                         const linkUrl = item.showInquire
@@ -599,11 +628,11 @@ export default function Home() {
                               <div 
                                 data-cursor={!hasLink ? "" : undefined}
                                 data-cursor-text={!hasLink ? "VIEW" : undefined}
-                                className="p-5 sm:p-6 bg-neutral-950/20 border border-neutral-900/50 rounded-xl flex flex-col justify-between hover:border-[var(--gold)]/30 hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(0,0,0,0.4)] transition-all duration-500 ease-out"
+                                className="p-6 sm:p-8 glass-card border border-neutral-900/60 rounded-2xl flex flex-col justify-between hover:border-[var(--gold)]/30 hover:-translate-y-1.5 hover:shadow-[0_15px_30px_rgba(197,160,89,0.03)] transition-all duration-500 ease-out h-full min-h-[220px]"
                               >
-                                <div className="mb-3">
-                                  <h4 className="font-bold text-xs uppercase text-[var(--gold)] tracking-wider mb-2">{item.title}</h4>
-                                  <p className="text-xs text-[var(--muted)] leading-relaxed">{item.desc}</p>
+                                <div className="space-y-4 mb-6">
+                                  <h3 className="font-[family-name:var(--font-playfair)] italic text-xl sm:text-2xl font-bold text-white">{item.title}</h3>
+                                  <p className="font-sans text-sm sm:text-base text-[var(--muted)] leading-relaxed whitespace-pre-line">{item.desc}</p>
                                 </div>
                                 
                                 {hasLink && (
@@ -613,7 +642,7 @@ export default function Home() {
                                     rel="noopener noreferrer"
                                     data-cursor
                                     data-cursor-text={item.buttonText || "INQUIRE"}
-                                    className="w-full mt-2 py-2 bg-[var(--bg)] border border-neutral-800 rounded text-[9px] font-[family-name:var(--font-syne)] font-bold tracking-[1.5px] uppercase hover:bg-[var(--text)] hover:text-black hover:border-transparent transition-all duration-300 cursor-pointer text-center block relative z-20 pointer-events-auto"
+                                    className="w-full mt-auto py-3 bg-[var(--bg)] border border-neutral-800 rounded text-[11px] font-[family-name:var(--font-syne)] font-bold tracking-[2px] uppercase hover:bg-[var(--text)] hover:text-black hover:border-transparent transition-all duration-300 cursor-pointer text-center block relative z-20 pointer-events-auto"
                                   >
                                     {item.buttonText || "Inquire"}
                                   </a>
@@ -624,17 +653,149 @@ export default function Home() {
                         );
                       })}
                     </div>
-                  </div>
-                </section>
-              );
+                  </section>
+                );
+              } else if (customSec.layout === "split-image-text") {
+                sectionContent = (
+                  <section key={customSec.id} id={customSec.id} className="py-20 sm:py-28 px-5 sm:px-8 md:px-16 max-w-6xl mx-auto reveal-elem">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+                      <div className="lg:col-span-7 space-y-5">
+                        <span className="text-[10px] tracking-[4px] uppercase font-bold text-[var(--gold)] block font-[family-name:var(--font-syne)]">{customSec.subtitle}</span>
+                        <h2 className="font-[family-name:var(--font-playfair)] italic text-3xl sm:text-4xl md:text-6xl font-black leading-tight text-white">{customSec.title}</h2>
+                        <p className="font-sans text-base sm:text-lg md:text-xl text-[var(--muted)] leading-relaxed whitespace-pre-line">{customSec.content}</p>
+                      </div>
+                      <div className="lg:col-span-5 space-y-4">
+                        {customSec.items?.map((item, idx) => {
+                          const hasLink = item.showInquire || item.link;
+                          const linkUrl = item.showInquire
+                            ? `https://wa.me/91${(config.whatsappNumber || "7738882899").replace(/\D/g, "")}?text=${encodeURIComponent(`Hi! I want to inquire about *${item.title}* from your website.`)}`
+                            : item.link;
+
+                          return (
+                            <div key={idx} className="relative w-full h-full" style={{ perspective: 1500 }}>
+                              <TiltCard>
+                                <div 
+                                  data-cursor={!hasLink ? "" : undefined}
+                                  data-cursor-text={!hasLink ? "VIEW" : undefined}
+                                  className="p-5 sm:p-6 bg-neutral-950/20 border border-neutral-900/50 rounded-xl flex flex-col justify-between hover:border-[var(--gold)]/30 hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(0,0,0,0.4)] transition-all duration-500 ease-out"
+                                >
+                                  <div className="mb-3">
+                                    <h4 className="font-bold text-xs uppercase text-[var(--gold)] tracking-wider mb-2">{item.title}</h4>
+                                    <p className="text-xs text-[var(--muted)] leading-relaxed">{item.desc}</p>
+                                  </div>
+                                  
+                                  {hasLink && (
+                                    <a
+                                      href={linkUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      data-cursor
+                                      data-cursor-text={item.buttonText || "INQUIRE"}
+                                      className="w-full mt-2 py-2 bg-[var(--bg)] border border-neutral-800 rounded text-[9px] font-[family-name:var(--font-syne)] font-bold tracking-[1.5px] uppercase hover:bg-[var(--text)] hover:text-black hover:border-transparent transition-all duration-300 cursor-pointer text-center block relative z-20 pointer-events-auto"
+                                    >
+                                      {item.buttonText || "Inquire"}
+                                    </a>
+                                  )}
+                                </div>
+                              </TiltCard>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </section>
+                );
+              } else if (customSec.layout === "accordion") {
+                sectionContent = (
+                  <section key={customSec.id} id={customSec.id} className="py-20 sm:py-28 px-5 sm:px-8 md:px-16 max-w-4xl mx-auto reveal-elem">
+                    <span className="text-[10px] tracking-[4px] uppercase font-bold text-[var(--gold)] mb-3 block font-[family-name:var(--font-syne)]">{customSec.subtitle}</span>
+                    <h2 className="font-[family-name:var(--font-playfair)] italic text-3xl sm:text-4xl md:text-6xl font-black mb-8 sm:mb-12 leading-tight text-white">{customSec.title}</h2>
+                    {customSec.content && <p className="font-sans text-base sm:text-lg text-[var(--muted)] mb-8 sm:mb-12 leading-relaxed max-w-3xl">{customSec.content}</p>}
+                    <div className="border-t border-neutral-900/60 divide-y divide-neutral-900/60">
+                      {customSec.items?.map((item, idx) => {
+                        const hasLink = item.showInquire || item.link;
+                        const linkUrl = item.showInquire
+                          ? `https://wa.me/91${(config.whatsappNumber || "7738882899").replace(/\D/g, "")}?text=${encodeURIComponent(`Hi! I want to inquire about *${item.title}* from your website.`)}`
+                          : item.link;
+
+                        return (
+                          <CustomAccordionItem 
+                            key={idx}
+                            title={item.title}
+                            desc={item.desc}
+                            hasLink={hasLink}
+                            linkUrl={linkUrl}
+                            buttonText={item.buttonText}
+                          />
+                        );
+                      })}
+                    </div>
+                  </section>
+                );
+              } else if (customSec.layout === "carousel") {
+                sectionContent = (
+                  <section key={customSec.id} id={customSec.id} className="py-20 sm:py-28 px-5 sm:px-8 md:px-16 max-w-6xl mx-auto reveal-elem">
+                    <span className="text-[10px] tracking-[4px] uppercase font-bold text-[var(--gold)] mb-3 block font-[family-name:var(--font-syne)]">{customSec.subtitle}</span>
+                    <h2 className="font-[family-name:var(--font-playfair)] italic text-3xl sm:text-4xl md:text-6xl font-black mb-8 sm:mb-12 leading-tight text-white">{customSec.title}</h2>
+                    {customSec.content && <p className="font-sans text-base sm:text-lg text-[var(--muted)] mb-8 sm:mb-12 leading-relaxed max-w-3xl">{customSec.content}</p>}
+                    
+                    <div className="overflow-x-auto pb-6 scrollbar-thin snap-x snap-mandatory flex gap-6 scroll-smooth">
+                      {customSec.items?.map((item, idx) => {
+                        const hasLink = item.showInquire || item.link;
+                        const linkUrl = item.showInquire
+                          ? `https://wa.me/91${(config.whatsappNumber || "7738882899").replace(/\D/g, "")}?text=${encodeURIComponent(`Hi! I want to inquire about *${item.title}* from your website.`)}`
+                          : item.link;
+
+                        return (
+                          <div key={idx} className="relative w-[280px] sm:w-[350px] shrink-0 snap-start" style={{ perspective: 1500 }}>
+                            <TiltCard>
+                              <div 
+                                data-cursor={!hasLink ? "" : undefined}
+                                data-cursor-text={!hasLink ? "VIEW" : undefined}
+                                className="p-6 sm:p-8 glass-card border border-neutral-900/60 rounded-2xl flex flex-col justify-between hover:border-[var(--gold)]/30 hover:-translate-y-1.5 hover:shadow-[0_15px_30px_rgba(197,160,89,0.03)] transition-all duration-500 ease-out h-full min-h-[220px]"
+                              >
+                                <div className="space-y-4 mb-6">
+                                  <h3 className="font-[family-name:var(--font-playfair)] italic text-xl sm:text-2xl font-bold text-white">{item.title}</h3>
+                                  <p className="font-sans text-sm sm:text-base text-[var(--muted)] leading-relaxed whitespace-pre-line">{item.desc}</p>
+                                </div>
+                                
+                                {hasLink && (
+                                  <a
+                                    href={linkUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    data-cursor
+                                    data-cursor-text={item.buttonText || "INQUIRE"}
+                                    className="w-full mt-auto py-3 bg-[var(--bg)] border border-neutral-800 rounded text-[11px] font-[family-name:var(--font-syne)] font-bold tracking-[2px] uppercase hover:bg-[var(--text)] hover:text-black hover:border-transparent transition-all duration-300 cursor-pointer text-center block relative z-20 pointer-events-auto"
+                                  >
+                                    {item.buttonText || "Inquire"}
+                                  </a>
+                                )}
+                              </div>
+                            </TiltCard>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </section>
+                );
+              }
             }
           }
-        }
 
           if (!sectionContent) return null;
 
+          const sectionAnim = sectionId.startsWith("custom-")
+            ? (config.customSections?.find((s) => s.id === sectionId)?.animation || "fade-slide")
+            : (config.sectionAnimations?.[sectionId] || "fade-slide");
+
           return (
-            <SectionWrapper key={sectionId} id={sectionId} bgConfig={config.sectionBackgrounds?.[sectionId]}>
+            <SectionWrapper 
+              key={sectionId} 
+              id={sectionId} 
+              bgConfig={config.sectionBackgrounds?.[sectionId]}
+              animation={sectionAnim}
+            >
               {sectionContent}
             </SectionWrapper>
           );

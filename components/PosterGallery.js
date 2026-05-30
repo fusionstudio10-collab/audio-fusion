@@ -46,7 +46,7 @@ function TiltCard({ children }) {
   );
 }
 
-export default function PosterGallery({ posters = [] }) {
+export default function PosterGallery({ posters = [], layout = "gallery" }) {
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [selectedPoster, setSelectedPoster] = useState(null);
   
@@ -59,7 +59,6 @@ export default function PosterGallery({ posters = [] }) {
   const lastXRef = useRef(0);
   const lastTimeRef = useRef(0);
 
-
   // Ensure enough items to form a ring
   const displayItems = posters.length < 5 ? [...posters, ...posters, ...posters].slice(0, 8) : posters;
   const autoRotateSpeed = 0.05;
@@ -68,6 +67,7 @@ export default function PosterGallery({ posters = [] }) {
 
   // Animation Loop for physics (momentum and auto-rotation)
   useEffect(() => {
+    if (layout !== "gallery") return;
     let animationFrameId;
     
     const updateRotation = () => {
@@ -96,7 +96,7 @@ export default function PosterGallery({ posters = [] }) {
     
     animationFrameId = requestAnimationFrame(updateRotation);
     return () => cancelAnimationFrame(animationFrameId);
-  }, [hoveredIndex]);
+  }, [hoveredIndex, layout]);
 
   if (!posters || posters.length === 0) return null;
 
@@ -141,10 +141,103 @@ export default function PosterGallery({ posters = [] }) {
     isDraggingRef.current = false;
   };
 
+  if (layout === "grid") {
+    return (
+      <section 
+        id="posters" 
+        className="py-14 sm:py-20 md:py-28 px-4 sm:px-8 md:px-16 max-w-7xl mx-auto relative z-10 bg-[#070708]"
+      >
+        {/* TITLE */}
+        <div className="w-full text-center reveal-elem mb-12 sm:mb-16">
+          <span className="font-mono text-[10px] tracking-[4px] uppercase text-[var(--neon-blue)]">
+            Visual Assets
+          </span>
+          <h2 className="font-[family-name:var(--font-playfair)] italic text-4xl sm:text-5xl md:text-6xl font-black mt-2 text-white">
+            Posters & Thumbnails
+          </h2>
+        </div>
+
+        {/* GALLERY GRID */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          {posters.map((poster) => {
+            const isPoster = poster.type === "poster" || !poster.type;
+            return (
+              <div 
+                key={poster.id} 
+                className={`relative w-full overflow-hidden ${isPoster ? "aspect-[3/4]" : "aspect-video"}`}
+                style={{ perspective: 1500 }}
+              >
+                <TiltCard>
+                  <div 
+                    onClick={() => setSelectedPoster(poster)}
+                    data-cursor
+                    data-cursor-text="VIEW"
+                    className="group relative cursor-pointer overflow-hidden rounded-2xl glass-card border border-neutral-900 w-full h-full hover:border-[var(--gold)]/30 hover:shadow-[0_0_30px_rgba(255,255,255,0.05)] transition-all duration-500"
+                  >
+                    <Image 
+                      src={poster.imageUrl} 
+                      alt={poster.title} 
+                      fill 
+                      sizes="(max-width: 768px) 100vw, 400px" 
+                      className="object-cover transition-transform duration-700 group-hover:scale-105" 
+                      draggable={false}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500" />
+                    
+                    <div className="absolute bottom-6 left-6 right-6 text-white z-20">
+                      <div className="text-[9px] uppercase tracking-widest text-white/50 mb-1">{poster.tag}</div>
+                      <h3 className="text-xl font-bold font-sans tracking-tight leading-tight group-hover:text-[var(--gold)] transition-colors">{poster.title}</h3>
+                    </div>
+                  </div>
+                </TiltCard>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* MODAL POP-UP */}
+        {selectedPoster && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-[fadeIn_0.3s_ease_forwards] pointer-events-auto">
+            <div className="absolute inset-0 cursor-pointer" onClick={() => setSelectedPoster(null)}></div>
+            
+            <div className="relative z-10 w-full max-w-4xl bg-[#0a0a0c] border border-white/10 rounded-2xl overflow-hidden shadow-2xl flex flex-col md:flex-row animate-[scaleUp_0.4s_cubic-bezier(0.16,1,0.3,1)_forwards]">
+              <button 
+                onClick={() => setSelectedPoster(null)}
+                className="absolute top-4 right-4 z-20 p-2 bg-black/50 hover:bg-black/80 rounded-full text-white transition-colors"
+              >
+                <X size={20} />
+              </button>
+              
+              <div className={`w-full relative min-h-[300px] ${selectedPoster.type === 'thumbnail' ? 'md:w-full min-h-[50vh]' : 'md:w-1/2 min-h-[70vh]'} bg-black flex items-center justify-center p-6`}>
+                <Image 
+                  src={selectedPoster.imageUrl} 
+                  alt={selectedPoster.title}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className={`w-full object-contain ${selectedPoster.type === 'thumbnail' ? 'aspect-video' : 'aspect-square'} rounded-lg shadow-lg`}
+                />
+              </div>
+              
+              <div className={`w-full ${selectedPoster.type === 'thumbnail' ? 'hidden' : 'md:w-1/2'} p-8 md:p-12 flex flex-col justify-center`}>
+                <div className="text-xs uppercase tracking-[4px] text-[var(--gold)] mb-4">{selectedPoster.tag}</div>
+                <h2 className="text-3xl md:text-4xl font-[family-name:var(--font-playfair)] italic mb-6 text-white leading-tight">
+                  {selectedPoster.title}
+                </h2>
+                <p className="text-sm text-neutral-400 leading-relaxed font-sans">
+                  {selectedPoster.description}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
+    );
+  }
+
   return (
     <section 
       id="posters" 
-      className="py-14 sm:py-20 md:py-28 overflow-hidden relative z-10 flex flex-col items-center bg-[#070708] touch-pan-y select-none"
+      className="py-14 sm:py-20 md:py-28 overflow-hidden relative z-10 flex flex-col items-center bg-[#070708] touch-pan-y select-none w-full"
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}

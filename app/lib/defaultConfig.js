@@ -231,6 +231,30 @@ export const defaultConfig = {
     "code": "FESTIVAL10",
     "bannerText": "Festival Sale! Get 10% off on all services. Use code: FESTIVAL10"
   },
+  "sectionLayouts": {
+    "services": "grid",
+    "testimonials": "marquee",
+    "founders": "cards",
+    "youtube-works": "grid",
+    "posters": "gallery"
+  },
+  "theme": {
+    "bg": "#070708",
+    "gold": "#c5a059",
+    "neonBlue": "#e2c074",
+    "text": "#f5f3ef",
+    "muted": "#8e8b82"
+  },
+  "sectionAnimations": {
+    "hero": "fade-slide",
+    "founders": "perspective-3d",
+    "youtube-works": "scale-up",
+    "services": "fade-slide",
+    "testimonials": "fade-slide",
+    "posters": "scale-up",
+    "booking": "fade-slide",
+    "contact": "fade-only"
+  },
   "sectionBackgrounds": {
     "founders": {
       "type": "color",

@@ -24,7 +24,8 @@ import {
   Tag,
   GripVertical,
   Image as ImageIcon,
-  MessageSquare
+  MessageSquare,
+  Palette
 } from "lucide-react";
 import { defaultConfig } from "../lib/defaultConfig";
 import { toast } from "../../components/Toast";
@@ -633,6 +634,55 @@ export default function AdminPanel() {
     setConfig({ ...config, customSections: updatedSections });
   };
 
+  const handleLayoutChange = (sectionKey, layoutValue) => {
+    setConfig({
+      ...config,
+      sectionLayouts: {
+        ...(config.sectionLayouts || {}),
+        [sectionKey]: layoutValue
+      }
+    });
+  };
+
+  const handleThemeColorChange = (colorKey, colorValue) => {
+    setConfig({
+      ...config,
+      theme: {
+        ...(config.theme || {
+          bg: "#070708",
+          gold: "#c5a059",
+          neonBlue: "#e2c074",
+          text: "#f5f3ef",
+          muted: "#8e8b82"
+        }),
+        [colorKey]: colorValue
+      }
+    });
+  };
+
+  const resetThemeColors = () => {
+    setConfig({
+      ...config,
+      theme: {
+        bg: "#070708",
+        gold: "#c5a059",
+        neonBlue: "#e2c074",
+        text: "#f5f3ef",
+        muted: "#8e8b82"
+      }
+    });
+  };
+
+  const handleAnimationChange = (sectionKey, animValue) => {
+    setConfig({
+      ...config,
+      sectionAnimations: {
+        ...(config.sectionAnimations || {}),
+        [sectionKey]: animValue
+      }
+    });
+  };
+
   const addCustomItem = (sectionId) => {
     const updatedSections = config.customSections.map((sec) => {
       if (sec.id === sectionId) {
@@ -689,6 +739,7 @@ export default function AdminPanel() {
 
   const navItems = [
     { id: "global", icon: <Settings size={16} />, label: "Global Settings" },
+    { id: "theme", icon: <Palette size={16} />, label: "Branding Styles" },
     { id: "layout", icon: <Layout size={16} />, label: "Page Layout Sequences" },
     { id: "custom-sections", icon: <Compass size={16} />, label: "Custom Page Blocks" },
     { id: "backgrounds", icon: <ImageIcon size={16} />, label: "Section Backgrounds & FX" },
@@ -769,6 +820,18 @@ export default function AdminPanel() {
   return (
     <div className="min-h-screen md:h-screen w-screen bg-[#070708] text-[#f3f3f0] font-[family-name:var(--font-syne)] flex flex-col md:flex-row relative md:overflow-hidden">
       <div className="film-grain" />
+      {config.theme && (
+        <style dangerouslySetInnerHTML={{ __html: `
+          :root {
+            --bg: ${config.theme.bg || "#070708"};
+            --gold: ${config.theme.gold || "#c5a059"};
+            --neon-blue: ${config.theme.neonBlue || "#e2c074"};
+            --text: ${config.theme.text || "#f5f3ef"};
+            --muted: ${config.theme.muted || "#8e8b82"};
+            --border: color-mix(in srgb, var(--gold) 8%, transparent);
+          }
+        `}} />
+      )}
 
       {/* Sidebar navigation – DESKTOP ONLY */}
       <aside className="hidden md:flex w-64 border-r border-neutral-900 bg-neutral-950/30 backdrop-blur-md flex-col z-20 h-full">
@@ -850,6 +913,116 @@ export default function AdminPanel() {
         {/* Tab Cards Content */}
         <div className="bg-neutral-950/40 border border-neutral-900/80 rounded-2xl p-6 md:p-8 space-y-8 backdrop-blur-md">
           
+          {/* TAB: BRANDING STYLES */}
+          {activeTab === "theme" && (
+            <div className="space-y-6 animate-fade-in">
+              <div className="p-4 bg-neutral-900/10 border border-neutral-900 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h4 className="text-xs uppercase font-bold text-white tracking-wider">Dynamic Studio Colors</h4>
+                  <p className="text-xs text-[var(--muted)] mt-1">Configure your brand style guide palette. Live updates instantly reflect on the page previews.</p>
+                </div>
+                <button 
+                  onClick={resetThemeColors}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-neutral-900 border border-neutral-800 hover:border-neutral-600 rounded text-[11px] font-bold uppercase tracking-widest transition-colors text-[var(--gold)]"
+                >
+                  <RotateCcw size={12} /> Reset Theme
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-xs font-mono text-[var(--muted)] mb-2 uppercase">Main Studio Background Color</label>
+                  <div className="flex gap-3">
+                    <input 
+                      type="color" 
+                      value={config.theme?.bg || "#070708"} 
+                      onChange={(e) => handleThemeColorChange("bg", e.target.value)} 
+                      className="w-12 h-10 border border-neutral-800 rounded bg-transparent cursor-pointer"
+                    />
+                    <input 
+                      type="text" 
+                      value={config.theme?.bg || "#070708"} 
+                      onChange={(e) => handleThemeColorChange("bg", e.target.value)} 
+                      className="flex-1 bg-[#070708] border border-neutral-900 rounded p-2 text-sm text-[var(--text)] font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-[var(--muted)] mb-2 uppercase">Brand Accent Color (Gold)</label>
+                  <div className="flex gap-3">
+                    <input 
+                      type="color" 
+                      value={config.theme?.gold || "#c5a059"} 
+                      onChange={(e) => handleThemeColorChange("gold", e.target.value)} 
+                      className="w-12 h-10 border border-neutral-800 rounded bg-transparent cursor-pointer"
+                    />
+                    <input 
+                      type="text" 
+                      value={config.theme?.gold || "#c5a059"} 
+                      onChange={(e) => handleThemeColorChange("gold", e.target.value)} 
+                      className="flex-1 bg-[#070708] border border-neutral-900 rounded p-2 text-sm text-[var(--text)] font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-[var(--muted)] mb-2 uppercase">Neon Glow / Secondary Color</label>
+                  <div className="flex gap-3">
+                    <input 
+                      type="color" 
+                      value={config.theme?.neonBlue || "#e2c074"} 
+                      onChange={(e) => handleThemeColorChange("neonBlue", e.target.value)} 
+                      className="w-12 h-10 border border-neutral-800 rounded bg-transparent cursor-pointer"
+                    />
+                    <input 
+                      type="text" 
+                      value={config.theme?.neonBlue || "#e2c074"} 
+                      onChange={(e) => handleThemeColorChange("neonBlue", e.target.value)} 
+                      className="flex-1 bg-[#070708] border border-neutral-900 rounded p-2 text-sm text-[var(--text)] font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-[var(--muted)] mb-2 uppercase">Primary Text Color</label>
+                  <div className="flex gap-3">
+                    <input 
+                      type="color" 
+                      value={config.theme?.text || "#f5f3ef"} 
+                      onChange={(e) => handleThemeColorChange("text", e.target.value)} 
+                      className="w-12 h-10 border border-neutral-800 rounded bg-transparent cursor-pointer"
+                    />
+                    <input 
+                      type="text" 
+                      value={config.theme?.text || "#f5f3ef"} 
+                      onChange={(e) => handleThemeColorChange("text", e.target.value)} 
+                      className="flex-1 bg-[#070708] border border-neutral-900 rounded p-2 text-sm text-[var(--text)] font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-[var(--muted)] mb-2 uppercase">Muted / Description Text Color</label>
+                  <div className="flex gap-3">
+                    <input 
+                      type="color" 
+                      value={config.theme?.muted || "#8e8b82"} 
+                      onChange={(e) => handleThemeColorChange("muted", e.target.value)} 
+                      className="w-12 h-10 border border-neutral-800 rounded bg-transparent cursor-pointer"
+                    />
+                    <input 
+                      type="text" 
+                      value={config.theme?.muted || "#8e8b82"} 
+                      onChange={(e) => handleThemeColorChange("muted", e.target.value)} 
+                      className="flex-1 bg-[#070708] border border-neutral-900 rounded p-2 text-sm text-[var(--text)] font-mono"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* TAB 1: GLOBAL SETTINGS */}
           {activeTab === "global" && (
             <div className="space-y-6">
@@ -1058,7 +1231,7 @@ export default function AdminPanel() {
                         <Trash2 size={16} />
                       </button>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
                           <label className="block text-[13px] font-mono text-[var(--muted)] mb-1 uppercase">Block Title</label>
                           <input type="text" value={sec.title} onChange={(e) => handleCustomSectionChange(sec.id, "title", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-sm text-[var(--text)] font-bold" />
@@ -1075,11 +1248,28 @@ export default function AdminPanel() {
                             className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-sm text-[var(--text)] focus:outline-none"
                           >
                             <option value="text-only">Simple Text Body</option>
-                            <option value="cards-grid">Feature Cards Grid</option>
-                            <option value="split-image-text">Split Row (Side Info)</option>
+                            <option value="cards-grid">Bento Cards Grid (Creative)</option>
+                            <option value="split-image-text">Zig-Zag Alternating Split (Creative)</option>
+                            <option value="accordion">Collapsible Accordion List</option>
+                            <option value="carousel">Horizontal Card Slider</option>
                           </select>
                         </div>
-                        <div className="col-span-1 md:col-span-3">
+                        <div>
+                          <label className="block text-[13px] font-mono text-[var(--muted)] mb-1 uppercase">Entry Animation</label>
+                          <select 
+                            value={sec.animation || "fade-slide"} 
+                            onChange={(e) => handleCustomSectionChange(sec.id, "animation", e.target.value)} 
+                            className="w-full bg-[#070708] border border-neutral-900 rounded p-2 text-sm text-[var(--text)] focus:outline-none"
+                          >
+                            <option value="fade-slide">Fade & Slide Up</option>
+                            <option value="fade-only">Simple Fade In</option>
+                            <option value="scale-up">Zoom Scale & Fade</option>
+                            <option value="slide-left">Slide from Left</option>
+                            <option value="slide-right">Slide from Right</option>
+                            <option value="perspective-3d">3D Rotate In</option>
+                          </select>
+                        </div>
+                        <div className="col-span-1 md:col-span-4">
                           <label className="block text-[13px] font-mono text-[var(--muted)] mb-1 uppercase">Block Content Body Paragraph</label>
                           <textarea rows="3" value={sec.content} onChange={(e) => handleCustomSectionChange(sec.id, "content", e.target.value)} className="w-full bg-[#070708] border border-neutral-900 rounded p-2.5 text-sm text-[var(--text)]" />
                         </div>
@@ -1150,6 +1340,34 @@ export default function AdminPanel() {
           {/* TAB 4: FOUNDERS PROFILES */}
           {activeTab === "founders" && (
             <div className="space-y-10">
+              <div className="p-4 bg-neutral-900/20 border border-neutral-900 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h4 className="text-xs uppercase font-bold text-white tracking-wider">Choose Section Layout & Animation</h4>
+                  <p className="text-xs text-[var(--muted)] mt-1">Select the display layout and entrance scroll animation of the Founders section.</p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <select
+                    value={config.sectionLayouts?.founders || "cards"}
+                    onChange={(e) => handleLayoutChange("founders", e.target.value)}
+                    className="bg-[#070708] border border-neutral-900 rounded p-2 text-sm text-[var(--text)] focus:outline-none cursor-pointer"
+                  >
+                    <option value="cards">Standard Profile Cards</option>
+                    <option value="split">Zig-Zag Interactive Split (Creative)</option>
+                  </select>
+                  <select
+                    value={config.sectionAnimations?.founders || "perspective-3d"}
+                    onChange={(e) => handleAnimationChange("founders", e.target.value)}
+                    className="bg-[#070708] border border-neutral-900 rounded p-2 text-sm text-[var(--text)] focus:outline-none cursor-pointer"
+                  >
+                    <option value="fade-slide">Fade & Slide Up</option>
+                    <option value="fade-only">Simple Fade In</option>
+                    <option value="scale-up">Zoom Scale & Fade</option>
+                    <option value="slide-left">Slide from Left</option>
+                    <option value="slide-right">Slide from Right</option>
+                    <option value="perspective-3d">3D Rotate In</option>
+                  </select>
+                </div>
+              </div>
               <div className="p-3 bg-[var(--gold)]/10 border border-[var(--gold)]/20 rounded-lg">
                 <p className="text-xs text-[var(--gold)] uppercase font-mono tracking-wider font-bold">Recommended Portrait Ratio</p>
                 <p className="text-sm text-white/80 mt-1 leading-relaxed">
@@ -1273,6 +1491,34 @@ export default function AdminPanel() {
           {/* TAB 5B: POSTERS & THUMBNAILS */}
           {activeTab === "posters" && (
             <div className="space-y-6">
+              <div className="p-4 bg-neutral-900/20 border border-neutral-900 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h4 className="text-xs uppercase font-bold text-white tracking-wider">Choose Section Layout & Animation</h4>
+                  <p className="text-xs text-[var(--muted)] mt-1">Select the layout style and entrance scroll animation for poster assets.</p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <select
+                    value={config.sectionLayouts?.posters || "gallery"}
+                    onChange={(e) => handleLayoutChange("posters", e.target.value)}
+                    className="bg-[#070708] border border-neutral-900 rounded p-2 text-sm text-[var(--text)] focus:outline-none cursor-pointer"
+                  >
+                    <option value="gallery">Horizontal Draggable Track</option>
+                    <option value="grid">3D Gallery Board (Creative)</option>
+                  </select>
+                  <select
+                    value={config.sectionAnimations?.posters || "scale-up"}
+                    onChange={(e) => handleAnimationChange("posters", e.target.value)}
+                    className="bg-[#070708] border border-neutral-900 rounded p-2 text-sm text-[var(--text)] focus:outline-none cursor-pointer"
+                  >
+                    <option value="fade-slide">Fade & Slide Up</option>
+                    <option value="fade-only">Simple Fade In</option>
+                    <option value="scale-up">Zoom Scale & Fade</option>
+                    <option value="slide-left">Slide from Left</option>
+                    <option value="slide-right">Slide from Right</option>
+                    <option value="perspective-3d">3D Rotate In</option>
+                  </select>
+                </div>
+              </div>
               <div className="flex justify-between items-center border-b border-neutral-900 pb-4">
                 <span className="text-xs uppercase font-bold text-[var(--muted)]">Manage Visual Assets ({config.posters?.length || 0})</span>
                 <button 
@@ -1349,9 +1595,38 @@ export default function AdminPanel() {
             </div>
           )}
 
-          {/* TAB 6: SERVICES */}
+          {/* TAB 6: TESTIMONIALS */}
           {activeTab === "testimonials" && (
             <div className="animate-fade-in space-y-10">
+              <div className="p-4 bg-neutral-900/20 border border-neutral-900 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h4 className="text-xs uppercase font-bold text-white tracking-wider">Choose Testimonial Layout & Animation</h4>
+                  <p className="text-xs text-[var(--muted)] mt-1">Select how reviews are displayed and how the section animates on entry.</p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <select
+                    value={config.sectionLayouts?.testimonials || "marquee"}
+                    onChange={(e) => handleLayoutChange("testimonials", e.target.value)}
+                    className="bg-[#070708] border border-neutral-900 rounded p-2 text-sm text-[var(--text)] focus:outline-none cursor-pointer"
+                  >
+                    <option value="marquee">Infinite Marquee Banner</option>
+                    <option value="grid">Testimonials Card Grid</option>
+                    <option value="slider">3D Swipe Deck (Creative)</option>
+                  </select>
+                  <select
+                    value={config.sectionAnimations?.testimonials || "fade-slide"}
+                    onChange={(e) => handleAnimationChange("testimonials", e.target.value)}
+                    className="bg-[#070708] border border-neutral-900 rounded p-2 text-sm text-[var(--text)] focus:outline-none cursor-pointer"
+                  >
+                    <option value="fade-slide">Fade & Slide Up</option>
+                    <option value="fade-only">Simple Fade In</option>
+                    <option value="scale-up">Zoom Scale & Fade</option>
+                    <option value="slide-left">Slide from Left</option>
+                    <option value="slide-right">Slide from Right</option>
+                    <option value="perspective-3d">3D Rotate In</option>
+                  </select>
+                </div>
+              </div>
               <div className="flex items-center justify-between pb-6 border-b border-neutral-900">
                 <h3 className="font-mono text-sm tracking-[3px] text-[var(--muted)] uppercase">Manage Testimonials ({(config.testimonials || []).length})</h3>
                 <button 
@@ -1423,6 +1698,35 @@ export default function AdminPanel() {
 
           {activeTab === "services" && (
             <div className="space-y-6">
+              <div className="p-4 bg-neutral-900/20 border border-neutral-900 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h4 className="text-xs uppercase font-bold text-white tracking-wider">Choose Section Layout & Animation</h4>
+                  <p className="text-xs text-[var(--muted)] mt-1">Select the layout format and entry viewport scroll transition for Services.</p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <select
+                    value={config.sectionLayouts?.services || "grid"}
+                    onChange={(e) => handleLayoutChange("services", e.target.value)}
+                    className="bg-[#070708] border border-neutral-900 rounded p-2 text-sm text-[var(--text)] focus:outline-none cursor-pointer"
+                  >
+                    <option value="grid">Standard Cards Grid</option>
+                    <option value="bento">Asymmetric Bento Grid (Creative)</option>
+                    <option value="accordion">Collapsible Accordion List</option>
+                  </select>
+                  <select
+                    value={config.sectionAnimations?.services || "fade-slide"}
+                    onChange={(e) => handleAnimationChange("services", e.target.value)}
+                    className="bg-[#070708] border border-neutral-900 rounded p-2 text-sm text-[var(--text)] focus:outline-none cursor-pointer"
+                  >
+                    <option value="fade-slide">Fade & Slide Up</option>
+                    <option value="fade-only">Simple Fade In</option>
+                    <option value="scale-up">Zoom Scale & Fade</option>
+                    <option value="slide-left">Slide from Left</option>
+                    <option value="slide-right">Slide from Right</option>
+                    <option value="perspective-3d">3D Rotate In</option>
+                  </select>
+                </div>
+              </div>
               <div className="flex justify-between items-center border-b border-neutral-900 pb-4">
                 <span className="text-xs uppercase font-bold text-[var(--muted)]">Manage Services Tiers ({config.services.length})</span>
                 <button 
@@ -1533,6 +1837,34 @@ export default function AdminPanel() {
           {/* TAB 7: YOUTUBE WORKS */}
           {activeTab === "youtube-works" && (
             <div className="space-y-6">
+              <div className="p-4 bg-neutral-900/20 border border-neutral-900 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h4 className="text-xs uppercase font-bold text-white tracking-wider">Choose Section Layout & Animation</h4>
+                  <p className="text-xs text-[var(--muted)] mt-1">Select the video presentation style and screen entry scroll animation.</p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <select
+                    value={config.sectionLayouts?.["youtube-works"] || "grid"}
+                    onChange={(e) => handleLayoutChange("youtube-works", e.target.value)}
+                    className="bg-[#070708] border border-neutral-900 rounded p-2 text-sm text-[var(--text)] focus:outline-none cursor-pointer"
+                  >
+                    <option value="grid">Video Preview Grid</option>
+                    <option value="carousel">Panoramic Side-Slider (Creative)</option>
+                  </select>
+                  <select
+                    value={config.sectionAnimations?.["youtube-works"] || "scale-up"}
+                    onChange={(e) => handleAnimationChange("youtube-works", e.target.value)}
+                    className="bg-[#070708] border border-neutral-900 rounded p-2 text-sm text-[var(--text)] focus:outline-none cursor-pointer"
+                  >
+                    <option value="fade-slide">Fade & Slide Up</option>
+                    <option value="fade-only">Simple Fade In</option>
+                    <option value="scale-up">Zoom Scale & Fade</option>
+                    <option value="slide-left">Slide from Left</option>
+                    <option value="slide-right">Slide from Right</option>
+                    <option value="perspective-3d">3D Rotate In</option>
+                  </select>
+                </div>
+              </div>
               <div className="flex justify-between items-center border-b border-neutral-900 pb-4">
                 <span className="text-xs uppercase font-bold text-[var(--muted)]">Manage YouTube Works ({(config.youtubeWorks || []).length})</span>
                 <button 
