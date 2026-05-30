@@ -19,23 +19,28 @@ export default function CustomCursor() {
     let ringX = 0;
     let ringY = 0;
     let rAF;
+    let hasMoved = false;
 
     const onMouseMove = (e) => {
       mouseX = e.clientX;
       mouseY = e.clientY;
-      if (!isVisible) {
+      if (!hasMoved) {
+        hasMoved = true;
+        ringX = mouseX;
+        ringY = mouseY;
         setIsVisible(true);
         document.documentElement.classList.add("hide-default-cursor");
       }
     };
 
     const onTouchStart = () => {
+      hasMoved = false;
       setIsVisible(false);
       document.documentElement.classList.remove("hide-default-cursor");
     };
 
     const onMouseOver = (e) => {
-      if (!isVisible) return;
+      if (!hasMoved) return;
       const target = e.target.closest("[data-cursor]");
       const dot = dotRef.current;
       const ring = ringRef.current;
@@ -86,11 +91,13 @@ export default function CustomCursor() {
       if (dot) {
         dot.style.left = `${mouseX}px`;
         dot.style.top = `${mouseY}px`;
+        dot.style.opacity = "1";
       }
 
       if (ring) {
         ring.style.left = `${ringX}px`;
         ring.style.top = `${ringY}px`;
+        ring.style.opacity = "1";
       }
 
       rAF = requestAnimationFrame(tick);
@@ -105,7 +112,7 @@ export default function CustomCursor() {
       cancelAnimationFrame(rAF);
       document.documentElement.classList.remove("hide-default-cursor");
     };
-  }, [isVisible]);
+  }, []);
 
   if (!isVisible) return null;
 
@@ -114,12 +121,10 @@ export default function CustomCursor() {
       {/* Outer Lag Ring */}
       <div
         ref={ringRef}
-        className="fixed top-0 left-0 rounded-full border border-[rgba(255,255,255,0.25)] pointer-events-none z-[10000] mix-blend-difference -translate-x-1/2 -translate-y-1/2 flex items-center justify-center transition-[width,height,background-color] duration-300 ease-out"
+        className="fixed top-0 left-0 rounded-full border border-[rgba(255,255,255,0.25)] pointer-events-none z-[10000] mix-blend-difference -translate-x-1/2 -translate-y-1/2 flex items-center justify-center transition-[width,height,background-color,opacity] duration-300 ease-out opacity-0"
         style={{
           width: "28px",
-          height: "28px",
-          left: "-100px",
-          top: "-100px"
+          height: "28px"
         }}
       >
         <span 
@@ -131,11 +136,7 @@ export default function CustomCursor() {
       {/* Inner Dot */}
       <div
         ref={dotRef}
-        className="fixed top-0 left-0 w-2 h-2 bg-[#f3f3f0] rounded-full pointer-events-none z-[10001] mix-blend-difference -translate-x-1/2 -translate-y-1/2 transition-transform duration-200"
-        style={{
-          left: "-100px",
-          top: "-100px"
-        }}
+        className="fixed top-0 left-0 w-2 h-2 bg-[#f3f3f0] rounded-full pointer-events-none z-[10001] mix-blend-difference -translate-x-1/2 -translate-y-1/2 transition-[transform,opacity] duration-200 opacity-0"
       />
     </>
   );
