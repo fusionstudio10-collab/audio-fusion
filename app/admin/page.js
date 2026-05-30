@@ -31,6 +31,56 @@ import {
 import { defaultConfig } from "../lib/defaultConfig";
 import { toast } from "../../components/Toast";
 
+const compressImage = (file, maxDimension = 1920, quality = 0.82) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          } else {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+        
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                type: "image/jpeg",
+                lastModified: Date.now(),
+              });
+              resolve(compressedFile);
+            } else {
+              reject(new Error("Canvas blob conversion failed"));
+            }
+          },
+          "image/jpeg",
+          quality
+        );
+      };
+      img.onerror = (err) => reject(err);
+    };
+    reader.onerror = (err) => reject(err);
+  });
+};
+
 function getYouTubeId(urlOrId) {
   if (!urlOrId) return "";
   let url = urlOrId.trim();
@@ -244,7 +294,7 @@ export default function AdminPanel() {
   };
 
   const handleImageUpload = async (e, fieldType, indexOrId = null) => {
-    const file = e.target.files[0];
+    let file = e.target.files[0];
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
@@ -256,6 +306,12 @@ export default function AdminPanel() {
     setUploadingField(uploadKey);
 
     try {
+      try {
+        file = await compressImage(file);
+      } catch (compErr) {
+        console.warn("Client-side compression failed, uploading original file:", compErr);
+      }
+
       const formData = new FormData();
       formData.append("file", file);
       formData.append("folder", "audio-fusion");
@@ -583,11 +639,19 @@ export default function AdminPanel() {
   };
 
   const handlePosterUpload = async (e, index) => {
-    const file = e.target.files?.[0];
+    let file = e.target.files?.[0];
     if (!file) return;
 
     setUploadingField(`poster-${index}`);
     try {
+      if (file.type.startsWith("image/")) {
+        try {
+          file = await compressImage(file);
+        } catch (compErr) {
+          console.warn("Poster compression failed, uploading original file:", compErr);
+        }
+      }
+
       const formData = new FormData();
       formData.append("file", file);
       formData.append("folder", `audio-fusion/posters`);
@@ -654,11 +718,19 @@ export default function AdminPanel() {
   };
 
   const handleBackgroundUpload = async (e, sectionId) => {
-    const file = e.target.files?.[0];
+    let file = e.target.files?.[0];
     if (!file) return;
 
     setUploadingField(`bg-${sectionId}`);
     try {
+      if (file.type.startsWith("image/")) {
+        try {
+          file = await compressImage(file);
+        } catch (compErr) {
+          console.warn("Background image compression failed, uploading original file:", compErr);
+        }
+      }
+
       const formData = new FormData();
       formData.append("file", file);
       formData.append("folder", `audio-fusion/backgrounds`);
@@ -1735,9 +1807,9 @@ export default function AdminPanel() {
                 </div>
               </div>
               <div className="p-3 bg-[var(--gold)]/10 border border-[var(--gold)]/20 rounded-lg">
-                <p className="text-xs text-[var(--gold)] uppercase font-mono tracking-wider font-bold">Recommended Portrait Ratio</p>
+                <p className="text-xs text-[var(--gold)] uppercase font-mono tracking-wider font-bold">Freesize & Auto-Sizing Supported</p>
                 <p className="text-sm text-white/80 mt-1 leading-relaxed">
-                  Use a 3:4 Portrait ratio (e.g. 1080x1440) for best results in the Founder Popup. The image will automatically fill the space.
+                  You can upload photos of any size or aspect ratio (freesize). The system automatically compresses the image and scales it to fit the profiles beautifully.
                 </p>
               </div>
               {config.founders.map((f, idx) => (
